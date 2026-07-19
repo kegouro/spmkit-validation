@@ -15,3 +15,5 @@ observations remain separate from the shared-matrix algorithm control.
 
 The Nanoscope external-confirmation pilot is `LEVEL 2 NUMERICALLY_VERIFIED`.
 Its accidental pre-freeze unblinding prevents any blind-holdout claim.
+SPM v0.1 Nanoscope parser scope is closed; a future Level 3 generalization
+claim requires newly acquired, previously unobserved files.
