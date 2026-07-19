@@ -3,6 +3,15 @@
 Arnés externo para validación de SPM-Kit.
 Este repositorio ejecuta comandos de SPM-Kit por medio de `subprocess` garantizando aislamiento, evitando el uso de API interna y probando el sistema como una caja negra.
 
+## Milestone Nanoscope SPM v0.1
+
+La campaña [Nanoscope SPM external confirmation v0.1](docs/campaigns/nanoscope_spm_parser_pilot_v0.1_audit.md)
+cerró como `AUDIT_PASS_WITH_LIMITATION`: el soporte Nanoscope III demostrado es
+`PARTIAL` y `LEVEL 2 NUMERICALLY_VERIFIED`. La confirmación Lancaster fue
+prerregistrada pero no ciega por `ACCIDENTAL_PRE_FREEZE_UNBLINDING`; no establece
+validación física ni un blind holdout. Una futura generalización Level 3 requiere
+archivos nuevos no observados y un protocolo congelado separado.
+
 ## Ejecución Local
 
 El framework está automatizado usando `Make` y requiere que tanto `spmkit` como `spmkit-phantoms` residan en el mismo nivel de directorios:

@@ -10,6 +10,7 @@ RESULTS = ROOT / "evidence/campaigns/nanoscope_spm_parser_pilot_v0.1_results.jso
 SUMMARY = ROOT / "evidence/campaigns/nanoscope_spm_parser_pilot_v0.1_summary.json"
 LOCK = ROOT / "locks/nanoscope_spm_parser_pilot_v0.1.json"
 AUDIT = ROOT / "docs/campaigns/nanoscope_spm_parser_pilot_v0.1_audit.md"
+README = ROOT / "README.md"
 PRIVATE = re.compile(r"/" + "Users/|file" + r"://|[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}", re.I)
 
 
@@ -36,6 +37,7 @@ def test_nanoscope_pilot_results_contract() -> None:
 def test_nanoscope_pilot_audit_closure_contract() -> None:
     text = AUDIT.read_text()
     coverage = (ROOT / "docs/validation/SPMKIT_VALIDATION_COVERAGE_v0.1.md").read_text()
+    readme = README.read_text()
     assert "AUDIT_PASS_WITH_LIMITATION" in text
     assert "5e221041dd2aef36923579b03e9d5148b1ad06df" in text
     assert "06b0044d8c4c5bb09109d460cb00ca6a3f917c50" in text
@@ -44,4 +46,7 @@ def test_nanoscope_pilot_audit_closure_contract() -> None:
     assert "LEVEL 2 NUMERICALLY_VERIFIED" in text
     assert "CROSS_VALIDATED" in text
     assert "SPM v0.1 Nanoscope parser scope is closed" in coverage
-    assert not PRIVATE.search(text + coverage)
+    assert "AUDIT_PASS_WITH_LIMITATION" in readme
+    assert "ACCIDENTAL_PRE_FREEZE_UNBLINDING" in readme
+    assert "archivos nuevos no observados" in readme
+    assert not PRIVATE.search(text + coverage + readme)
