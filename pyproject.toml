@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spmkit-validation"
+version = "0.1.0"
+description = "Arnés externo de validación para SPM-Kit"
+authors = [
+    { name = "SPM-Kit contributors" },
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml",
+    "pytest>=7.0",
+    "matplotlib>=3.7",
+]
+
+[project.scripts]
+spmkit-validation = "spmkit_validation.cli:main"
