@@ -37,3 +37,12 @@ Initial state: CANDIDATE_FROZEN. Acceptance requires all 60 metric
 comparisons within the frozen criterion, finite values, matching hashes and
 units, and no change to Gwyddion normalization. Raw outputs remain local;
 only compact aggregate metadata may be tracked after acceptance.
+
+## Accepted result
+
+The independent 20-case calibration completed with 60 of 60 comparisons
+within the frozen criterion and none outside it. The maximum threshold ratio
+was 6.7727096066359644e-08. This accepts v0.1 for Sa, Sq, and Sz comparisons
+on shared float32 nm matrices with no preprocessing. It does not establish
+an instrumental tolerance, cover nonfinite input, or replace campaign-level
+validation.
