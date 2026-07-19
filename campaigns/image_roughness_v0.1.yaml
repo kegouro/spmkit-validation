@@ -1,0 +1,69 @@
+name: "image_roughness"
+version: "0.1"
+description: "Campaña End-to-End de validación de rugosidad (Sa, Sq, Sz) y nivelación."
+
+base_models:
+  - id: "inclined"
+    type: "inclined_plane"
+    params:
+      shape: [256, 256]
+      x_size_m: 10.0e-6
+      y_size_m: 10.0e-6
+      slope_x: 0.05
+      slope_y: 0.02
+  - id: "sine"
+    type: "sinusoidal_surface"
+    params:
+      shape: [256, 256]
+      x_size_m: 10.0e-6
+      y_size_m: 10.0e-6
+      amplitude: 5.0e-9
+      period_x: 2.0e-6
+      period_y: 2.0e-6
+  - id: "step"
+    type: "step_surface"
+    params:
+      shape: [256, 256]
+      x_size_m: 10.0e-6
+      y_size_m: 10.0e-6
+      step_height: 20.0e-9
+
+corruptions:
+  - id: "clean"
+    type: "none"
+  - id: "noise_low"
+    type: "additive_gaussian_noise"
+    params:
+      sigma: 1.0e-10
+  - id: "noise_mid"
+    type: "additive_gaussian_noise"
+    params:
+      sigma: 1.0e-9
+  - id: "noise_high"
+    type: "additive_gaussian_noise"
+    params:
+      sigma: 1.0e-8
+  - id: "offset_low"
+    type: "line_offsets"
+    params:
+      sigma: 1.0e-10
+  - id: "offset_mid"
+    type: "line_offsets"
+    params:
+      sigma: 1.0e-9
+  - id: "offset_high"
+    type: "line_offsets"
+    params:
+      sigma: 1.0e-8
+  - id: "drift_low"
+    type: "slow_linear_drift"
+    params:
+      slope_y: 1.0e-10
+  - id: "drift_mid"
+    type: "slow_linear_drift"
+    params:
+      slope_y: 1.0e-9
+  - id: "drift_high"
+    type: "slow_linear_drift"
+    params:
+      slope_y: 1.0e-8

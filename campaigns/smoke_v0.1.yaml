@@ -1,0 +1,37 @@
+name: "smoke"
+version: 0.1
+description: "Campaña sintética rápida para Continuous Integration. Validará el parser, la instanciación de corrupciones y la orquestación en bajo tiempo y baja resolución, usando el target spmkit."
+
+base_models:
+  - id: "inclined"
+    type: "inclined_plane"
+    params:
+      shape: [16, 16]
+      x_size_m: 1.0e-5
+      y_size_m: 1.0e-5
+      slope_x: 0.05
+      slope_y: -0.02
+  - id: "sine"
+    type: "sinusoidal_surface"
+    params:
+      shape: [16, 16]
+      x_size_m: 1.0e-5
+      y_size_m: 1.0e-5
+      amplitude: 1.0e-8
+      period_x: 2.0e-6
+      period_y: 5.0e-6
+  - id: "step"
+    type: "step_surface"
+    params:
+      shape: [16, 16]
+      x_size_m: 1.0e-5
+      y_size_m: 1.0e-5
+      step_height: 5.0e-9
+
+corruptions:
+  - id: "clean"
+    type: "none"
+  - id: "noise_low"
+    type: "additive_gaussian_noise"
+    params:
+      sigma: 1.0e-10
