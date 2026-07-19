@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "campaign_id": "real-data-roughness-pilot-v0.1",
+  "cases": 12,
+  "sources": 3,
+  "shared_matrix_comparisons": 36,
+  "shared_matrix_within_threshold": 36,
+  "shared_matrix_outside_threshold": 0,
+  "shared_matrix_execution_errors": 0,
+  "parser_fidelity": {
+    "PARSER_EQUIVALENCE_OBSERVED": 10,
+    "PARSER_DIFFERENCE_OBSERVED": 2,
+    "PARSER_UNSUPPORTED": 0,
+    "PARSER_INCONCLUSIVE": 0
+  },
+  "end_to_end": {
+    "END_TO_END_AGREEMENT_OBSERVED": 10,
+    "END_TO_END_DIFFERENCE_OBSERVED": 2,
+    "END_TO_END_UNSUPPORTED": 0,
+    "END_TO_END_INCONCLUSIVE": 0
+  },
+  "max_shared_metric_delta_nm": 7.87458986906131e-12,
+  "max_shared_threshold_ratio": 1.5098490552017083e-06,
+  "evidence_level": "LEVEL 3 CROSS_VALIDATED",
+  "claim_limit": "Shared-matrix Sa/Sq/Sz only; GWY parser and end-to-end results are observational. Real data are not physical validation.",
+  "results_jsonl_sha256": "3c2da1f48ef0b06217867f22b7c26f7ca2a65889c8b16c62f620d0f6ebe1a346"
+}
