@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "campaign_id": "real-data-roughness-pilot-v0.1",
+  "state": "READY_TO_EXECUTE",
+  "repositories": {
+    "spmkit": "5a704d61145cc502a8e5bc855bf300836fc3832e",
+    "spmkit_phantoms": "622a88823366b9dc96207bf9be3e7de810eef208",
+    "spmkit_validation": "de1b905db594c97b6d6d5e3f483a484f2f00c873",
+    "threshold_policy": "c5c91eb5ac19a002a55f920d50053967b5393477",
+    "data_hunter": "852af89e27585dc2239148a272f41200cbe4b658"
+  },
+  "software": {"spmkit": "0.1.5.dev0", "gwyfile": "0.3.0", "afmformats": "0.18.7", "gwyddion": "2.71"},
+  "gwyddion_helpers": {
+    "stats": {"source_sha256": "474b0ceb2e4492ec33c2d09f42518d97b7814670965914d29665bf6594d0c2d4", "binary_sha256": "ef79c77e152cd443917e057f7fa3d7706e88c4278002d5d62d60294b3c466477"},
+    "extract": {"source_sha256": "2e0b28da64fc246b25acbc5578775f827b62e3aff3b18602d615d7ba3b69c48e", "binary_sha256": "867aa16f46d90e7956aa68ea6b5f6d35578b770067b7126c7a885f234bbbbb22"}
+  },
+  "algorithm_threshold": {"atol_nm": 1e-6, "rtol": 1e-6, "future_comparisons": 36},
+  "parser_thresholds": null,
+  "design": {"records": 12, "sources": 3, "jsonl_sha256": "7175bbe7a54b90f9da7fd82c71a29835903dadc40479aa470b24cd068ce35362"},
+  "sources": {
+    "ce-6ntsk": {"doi": "10.57703/ce-6ntsk", "license": "CC-BY-SA-4.0", "cases": 4},
+    "16287446": {"doi": "10.5281/zenodo.16287446", "license": "CC-BY-4.0", "cases": 4},
+    "17970187": {"doi": "10.5281/zenodo.17970187", "license": "CC-BY-4.0", "cases": 4}
+  },
+  "claim_limit": "GWY-only observational parser pilot; shared-matrix Sa/Sq/Sz comparison without preprocessing."
+}

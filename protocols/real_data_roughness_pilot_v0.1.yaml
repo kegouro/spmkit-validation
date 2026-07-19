@@ -1,0 +1,32 @@
+protocol_id: real-data-roughness-pilot-v0.1
+mode: FROZEN_PILOT
+execution_state: READY_TO_EXECUTE
+evidence_target: LEVEL 2 NUMERICALLY_VERIFIED
+input_scope: public experimental GWY topography data
+selection_rule: source_id_then_file_sha256_then_channel_index_before_metrics
+metrics: [Sa, Sq, Sz]
+preprocessing:
+  leveling: forbidden
+  filtering: forbidden
+  line_correction: forbidden
+  interpolation: forbidden
+  resampling: forbidden
+tracks:
+  parser_fidelity:
+    mode: observational
+    thresholds: null
+  shared_matrix:
+    canonical_dtype: float32
+    byte_order: little
+    memory_order: C
+    numeric_unit: nm
+    absolute_tolerance_nm: 1.0e-6
+    relative_tolerance: 1.0e-6
+    criterion: abs(a-b) <= 1e-6 + 1e-6 * max(abs(a), abs(b))
+  end_to_end:
+    mode: observational
+claims:
+  - shared-matrix evaluates Sa/Sq/Sz only
+  - parser observations are limited to GWY
+  - real data do not establish physical validation
+  - negative, unsupported, and inconclusive results are preserved
