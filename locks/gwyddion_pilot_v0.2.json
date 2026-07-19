@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "captured_at": "2026-07-19T00:00:00Z",
+  "repositories": {
+    "spmkit": {
+      "commit": "5a704d61145cc502a8e5bc855bf300836fc3832e",
+      "version": "0.1.5.dev0",
+      "path": "<spmkit>"
+    },
+    "spmkit_validation": {
+      "base_commit": "198f3cb36e1e4456bf212df91ef465223bb5ed34",
+      "version": "0.1.0",
+      "path": "<validation>"
+    },
+    "spmkit_phantoms": {
+      "commit": "16fffcebc931765fdd193cf531b07db576689523",
+      "version": "0.1.0",
+      "path": "<phantoms>"
+    }
+  },
+  "gwyddion": {
+    "command": "gwyddion",
+    "version": "2.71",
+    "batch_capability": "BATCH_CONFIRMED",
+    "batch_operation": "--check",
+    "output_semantics": {
+      "classification": "GWY_NATIVE_NM",
+      "micro_smoke_payload_nm": [0.0, 100.0],
+      "observed_min": 0.0,
+      "observed_max": 100.0,
+      "observed_sz": 100.0,
+      "datafield_dimensional_unit_label": "m",
+      "normalization_to_nm": "identity"
+    }
+  },
+  "runtime": {
+    "python": "3.13.9",
+    "platform": "Darwin-arm64"
+  },
+  "state": "READY_TO_EXECUTE"
+}
