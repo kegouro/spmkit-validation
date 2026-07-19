@@ -1,0 +1,30 @@
+{
+  "campaign_id": "nanoscope-spm-parser-pilot-v0.1",
+  "cases": 6,
+  "claim_limit": "External confirmation was preregistered but is not a blind holdout; no physical-validation claim is made.",
+  "development_cases": 4,
+  "end_to_end": {
+    "END_TO_END_AGREEMENT_OBSERVED": 6,
+    "END_TO_END_DIFFERENCE_OBSERVED": 0,
+    "END_TO_END_INCONCLUSIVE": 0,
+    "END_TO_END_UNSUPPORTED": 0
+  },
+  "evidence_level": "LEVEL 2 NUMERICALLY_VERIFIED",
+  "external_confirmation_cases": 2,
+  "incident": "ACCIDENTAL_PRE_FREEZE_UNBLINDING",
+  "max_absolute_metric_delta_nm": 4.902744876744691e-13,
+  "max_absolute_pixel_delta_nm": 0.0,
+  "max_threshold_ratio": 2.3624476954791442e-07,
+  "parser_fidelity": {
+    "PARSER_DIFFERENCE_OBSERVED": 0,
+    "PARSER_EQUIVALENCE_OBSERVED": 6,
+    "PARSER_INCONCLUSIVE": 0,
+    "PARSER_UNSUPPORTED": 0
+  },
+  "roughness_comparisons": 18,
+  "roughness_outside_threshold": 0,
+  "roughness_within_threshold": 18,
+  "schema_version": "1.0",
+  "source_zip_sha256": "ca0c8cc6d0a3903970ab7607aa9aed703cfa0552823d7da783adcfa2a510de1a",
+  "unblinded_reserve_cases_executed": 0
+}
