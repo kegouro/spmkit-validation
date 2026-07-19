@@ -1,0 +1,54 @@
+{
+  "schema": "roughness-threshold-evidence-1.0",
+  "candidate_commit": "61e1002a654b5f44c8be2e929019f74d3efa391a",
+  "commits": {
+    "spmkit": "5a704d61145cc502a8e5bc855bf300836fc3832e",
+    "spmkit_phantoms": "16fffcebc931765fdd193cf531b07db576689523",
+    "validation_pilot_v0_2": "f8a8cb0cd5642a4da29d1a9f2ddce91a664dab63"
+  },
+  "versions": {
+    "gwyddion": "2.71",
+    "spmkit": "0.1.5.dev0"
+  },
+  "case_count": 20,
+  "comparison_count": 60,
+  "matrix_hashes": {
+    "C01_ZERO": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90",
+    "C02_CONSTANT_1000": "ec3fab31ec5e4026eae88646dae8c7e01591b5fc4d7a151d1d21fa15d577c124",
+    "C03_SINGLE_IMPULSE": "478d9f58636c1f50b8124296c04b4a2c70e3874d900c8bdb4f1dfaae7eddaddb",
+    "C04_CHECKERBOARD": "54ecd2d662b956fa6fe05a6a2e602c4da3929bbe42f8fd41360f8ab915947c9d",
+    "C05_RAMP_X": "3da8bdede9845ea2d6701827585a944d516b24f2b183db45cb2957ab69dd536d",
+    "C06_RAMP_Y": "2382725df2f953701ab869ccc04afe0fd5ea36749d51e5e7c72cb80e31ddac41",
+    "C07_SINE_X_SMALL": "d9e77b99f029a5854ad8b607166bb36a981771a2380649c0f4ee7c86d29d23f6",
+    "C08_SINE_X_37": "845bf8b51b465b61b3438a4f28f526135971ba825bc767fc0a0a736f993ccf26",
+    "C09_SINE_Y_750": "e0c41b9dec6c5ac8c62957b0237d69fa556cf43eba2851964a94bbf50390653b",
+    "C10_SINE_XY_83": "286a5debe36fbf9c8350ee62d58d1041ab266cd167fe3cc19c864eaf7dfc381f",
+    "C11_STEP_37": "93eb1769450ac2fee57cf8e5720872ac5565cc3335ac5f26bd2c3c3749d94109",
+    "C12_STEP_63_SMALL": "47b8c18932ba1c6790dd986335d1f61c8bf6c6c301fa9f9dcfab94c2523f7666",
+    "C13_GAUSSIAN_5": "f4002ca0fe02f4b88a149b2ac7aadb1fc18d2c9adafe7eea054c64b2c3b2b425",
+    "C14_GAUSSIAN_SMALL": "03b48bafca8a858b0015f5772f72b0c0ec7f189f9c78fc1e0ed996f966db7ff3",
+    "C15_UNIFORM_100": "ce747cda59ffb1148711c6432b375461e234eb398cd5cf6633d767627ee8790a",
+    "C16_ROW_OFFSETS": "219d8d316970815d4555cc4d10c1757f2768facfeee9d4b39025920de4fba1f9",
+    "C17_COLUMN_OFFSETS": "138c5906c44fc173c6da74b1dcccb26d2d7f9b79bd9aa020d05e5c22cb0aa5f2",
+    "C18_RAMP_SINE_GAUSSIAN": "5c87c7fed9ab48f7abd033ef3bb369c371e98a45bbce12c815a1d2e38e24fd17",
+    "C19_DC_10000_RIPPLE": "d3f92c31c1892a217c16f289ff087e39adabc6043c35933768cb224e23373725",
+    "C20_SPARSE_64": "1cb3087ed5b55dc9169ac5f5528d9ec9550cd22194f03ff89af584c8510e095e"
+  },
+  "thresholds": {
+    "absolute_tolerance_nm": 1.0e-6,
+    "relative_tolerance": 1.0e-6,
+    "criterion": "abs(a-b) <= absolute_tolerance_nm + relative_tolerance * max(abs(a), abs(b))"
+  },
+  "max_absolute_delta_nm": 1.6711965145077556e-11,
+  "max_relative_delta": 2.3950871687254661e-13,
+  "max_threshold_ratio": 6.7727096066359644e-08,
+  "within_count": 60,
+  "outside_count": 0,
+  "state": "THRESHOLD_POLICY_ACCEPTED",
+  "evidence_level": "LEVEL 2 NUMERICALLY_VERIFIED",
+  "limitations": [
+    "Applies only to Sa, Sq, and Sz on shared finite float32 nm matrices without preprocessing.",
+    "Does not define physical instrument tolerance or validate nonfinite inputs.",
+    "Raw calibration outputs remain local and are not included."
+  ]
+}

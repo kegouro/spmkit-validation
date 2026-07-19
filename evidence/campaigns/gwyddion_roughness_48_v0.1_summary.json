@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "campaign_id": "gwyddion-roughness-48-v0.1",
+  "commits": {
+    "spmkit": "5a704d61145cc502a8e5bc855bf300836fc3832e",
+    "phantoms": "622a88823366b9dc96207bf9be3e7de810eef208",
+    "validation_freeze": "bdda532ae11f947eb35552d25ea3a303acc997ea",
+    "threshold_policy": "c5c91eb5ac19a002a55f920d50053967b5393477"
+  },
+  "gwyddion_version": "2.71",
+  "thresholds": {
+    "atol_nm": 1e-06,
+    "rtol": 1e-06
+  },
+  "counts": {
+    "cases": 48,
+    "comparisons": 144,
+    "within_threshold": 144,
+    "outside_threshold": 0,
+    "execution_errors": 0
+  },
+  "max_absolute_delta_nm": 1.617905809325748e-11,
+  "max_relative_delta": 4.176145240716599e-13,
+  "max_threshold_ratio": 4.071062797544526e-07,
+  "global_status": "CAMPAIGN_PASS",
+  "evidence_level": "LEVEL 3 CROSS_VALIDATED",
+  "limitations": "Cross-validation covers only Sa, Sq, and Sz on the frozen 48 canonical matrices without preprocessing; it is not physical validation or complete SPMKit validation."
+}

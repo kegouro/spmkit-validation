@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "repositories": {
+    "spmkit": {"commit": "5a704d61145cc502a8e5bc855bf300836fc3832e", "path": "<spmkit>"},
+    "spmkit_phantoms": {"commit": "16fffcebc931765fdd193cf531b07db576689523", "path": "<phantoms>"},
+    "spmkit_validation_pilot_v0_2": {"commit": "f8a8cb0cd5642a4da29d1a9f2ddce91a664dab63", "path": "<validation>"}
+  },
+  "gwyddion": {
+    "version": "2.71",
+    "route": "native GSF importer plus libgwyprocess",
+    "normalization_to_nm": "identity"
+  },
+  "candidate_policy": {
+    "absolute_tolerance_nm": 1.0e-6,
+    "relative_tolerance": 1.0e-6,
+    "criterion": "abs(a-b) <= absolute_tolerance_nm + relative_tolerance * max(abs(a), abs(b))",
+    "state": "CANDIDATE_FROZEN"
+  }
+}

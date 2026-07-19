@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "captured_at": "2026-07-19T05:56:16Z",
+  "repositories": {
+    "spmkit": {
+      "commit": "5a704d61145cc502a8e5bc855bf300836fc3832e",
+      "version": "0.1.5.dev0",
+      "path": "<spmkit>"
+    },
+    "spmkit_validation": {
+      "base_commit": "132d00c521c0a873128163d437b8e7003402729f",
+      "version": "0.1.0",
+      "path": "<validation>"
+    },
+    "spmkit_phantoms": {
+      "commit": "16fffcebc931765fdd193cf531b07db576689523",
+      "version": "0.1.0",
+      "path": "<phantoms>"
+    }
+  },
+  "gwyddion": {
+    "command": "gwyddion",
+    "version": "2.71",
+    "batch_capability": "BATCH_CONFIRMED",
+    "batch_operation": "--check"
+  },
+  "runtime": {
+    "python": "3.13.9",
+    "platform": "Darwin-arm64"
+  },
+  "state": "READY_TO_EXECUTE"
+}

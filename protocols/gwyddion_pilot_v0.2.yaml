@@ -1,0 +1,81 @@
+protocol_id: gwyddion-pilot-v0.2
+mode: PILOT
+evidence_target: LEVEL 2 NUMERICALLY_VERIFIED
+pass_fail_thresholds: null
+matrix_shape: [256, 256]
+physical_extent:
+  x_size_m: 1.0e-5
+  y_size_m: 1.0e-5
+  xy_unit: m
+source_generator_numeric_unit: m
+canonical_z_numeric_unit: nm
+canonical_dtype: float32
+canonical_byte_order: little
+canonical_memory_order: C
+canonical_conversion_from_source_m: 1.0e9
+gsf_z_unit: nm
+gsf_payload_scaling: none
+spmkit_input_numeric_unit: nm
+spmkit_output_unit: nm
+gwyddion_output_normalized_unit: nm
+gwyddion_output_semantics:
+  classification: GWY_NATIVE_NM
+  demonstrated_case: payload [0.0, 100.0] with ZUnits=nm yields min=0.0, max=100.0, Sz=100.0
+  datafield_dimensional_unit_label: m
+  normalization_to_nm: identity
+  rationale: Gwyddion preserves GSF payload numbers in its DataField statistics; its dimensional unit label does not rescale the payload.
+stochastic_seed: 42
+metrics_primary: [Sa, Sq, Sz]
+comparison_controls:
+  leveling: forbidden
+  filtering: forbidden
+  line_correction: forbidden
+  interpolation: forbidden
+  resampling: forbidden
+  definitive_pass_fail: forbidden
+matrix_contract:
+  canonical_matrix_sha256: required_per_case
+  spmkit_input: canonical_float32_nm
+  gwyddion_input: canonical_gsf_float32_nm
+  exchange_format_sha256: required_per_case
+  invariant: identical_canonical_matrix_bytes_for_both_tools
+  orientation: row_0_is_y_min_and_column_0_is_x_min
+  sz_definition: maximum_height_minus_minimum_height
+cases:
+  - case_id: P01_PLANE_RAW
+    generator: inclined_plane
+    parameters:
+      slope_x_nm_per_um: 2.0
+      slope_y_nm_per_um: 1.0
+      z_offset_nm: 0.0
+    corruptions: []
+  - case_id: P02_SINE_RAW
+    generator: sinusoidal_surface
+    parameters:
+      axis: x
+      amplitude_nm: 50.0
+      period_x_um: 2.5
+      period_y_um: 10.0
+      phase_rad: 0.0
+    corruptions: []
+  - case_id: P03_STEP_GAUSSIAN
+    generator: step_surface
+    parameters:
+      step_height_nm: 100.0
+      x_split_ratio: 0.5
+    corruptions:
+      - type: AdditiveGaussianNoise
+        sigma_nm: 5.0
+        seed: 42
+  - case_id: P04_SINE_LINE_OFFSETS
+    generator: sinusoidal_surface
+    parameters:
+      axis: x
+      amplitude_nm: 50.0
+      period_x_um: 2.5
+      period_y_um: 10.0
+      phase_rad: 0.0
+    corruptions:
+      - type: LineOffsets
+        sigma_nm: 5.0
+        seed: 42
