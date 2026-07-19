@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "campaign_id": "nanoscope-spm-parser-pilot-v0.1",
+  "state": "READY_FOR_IMPLEMENTATION",
+  "incident": {
+    "classification": "ACCIDENTAL_PRE_FREEZE_UNBLINDING",
+    "selection_predefined_by": "full SHA-256 ascending order",
+    "tooling_emitted": ["Sa", "Sq", "Sz"],
+    "implementation_started": false,
+    "claim_limit": "external confirmation is preregistered but not blind"
+  },
+  "repositories": {
+    "spmkit": "5a704d61145cc502a8e5bc855bf300836fc3832e",
+    "spmkit_validation": "e7576590e05b31cb70d899c54a51ee998edfb207"
+  },
+  "software": {"gwyddion": "2.71"},
+  "roughness_threshold": {"atol_nm": 1e-6, "rtol": 1e-6},
+  "raw_source": {
+    "doi": "10.17635/lancaster/researchdata/743",
+    "license": "CC BY",
+    "zip_sha256": "ca0c8cc6d0a3903970ab7607aa9aed703cfa0552823d7da783adcfa2a510de1a"
+  },
+  "cases": [
+    {"role": "DEVELOPMENT", "source_id": "ce-ybtnr", "sha256": "37ab008e42dc76642dc16a024cf43c37a892fe5403c9b6be0a4a8c2d745c899f", "channel": "Height Sensor"},
+    {"role": "DEVELOPMENT", "source_id": "ce-ybtnr", "sha256": "a23387bbd9b8f0f4f454c0bb518ce80ac1dcb64c2514739d2f98b6c74868993b", "channel": "Height Sensor"},
+    {"role": "DEVELOPMENT", "source_id": "ce-ybtnr", "sha256": "fb2719aa6d5d25eac77eda79895db67e50c2472e8a9bc378885f803d9214b2aa", "channel": "Height Sensor"},
+    {"role": "DEVELOPMENT", "source_id": "ce-mvttv", "sha256": "c2a5854cb7179176ff5b97ad13dce54e97d1fe9f713409f011b4f97e488219e3", "channel": "Height Sensor"},
+    {"role": "EXTERNAL_CONFIRMATION", "source_id": "lancaster-743", "sha256": "0228f8cb72e8d57390c9d7d23c54acf2cf5dc8085f79544ae2a3441b3463a4fc", "channel": "Height"},
+    {"role": "EXTERNAL_CONFIRMATION", "source_id": "lancaster-743", "sha256": "072bcffa182f97c177e2efbacff3c98d0451ac798dfc08f175f8fa728b01ebba", "channel": "Height"}
+  ],
+  "unblinded_reserve_sha256": [
+    "2dc1a41e60da070f2f46f2da3fb4ef081d75b3dc09bef178e3685d145363b2ea",
+    "3651f81d4e9ef7abb26c178455945ae29ec739396da48897b96488acb28317b2",
+    "42fdb23be8965ca308abe01a5f48049d8d1b961a8af1d22f5ada9e3a0bb1f2be",
+    "5c1b981826c67c63ef1f9da637e9e8d9f6f7b070b4cbaef2e9e577be65c0ccb6",
+    "6800eb11e62a0e26230add858cebd5984e224defb9e0c32e8097eca51df9058a",
+    "9cc2ec3dc70224d11adf30a1d14c3428d34447e6d79acaff1d77ad4229a5a49f",
+    "a5d199f9c3855abd668141e55e9c24cfbe83d57f5a5cd8e5a78a5d69e5dc12b3",
+    "ab357e258a76a3ade5614408c0ef853b1ca337a8e6906053b0ca957f505fa2d2",
+    "c6e49e4fbf3545491b9a9c17e01025ce4ac16961279ecddb864bea99f364f5ec",
+    "cd35455d8cfb1014003091c9bb49deeaad0c7b4d3888739ff431c8c915f74f0f",
+    "d869e3532946f333a6ccc9afc56f636ce7e17989f827bcf459f286654798666f",
+    "e54686c643f63e6aa397b9dcca1790c1d407addeb575377d52c8c91bd3c4711e"
+  ]
+}

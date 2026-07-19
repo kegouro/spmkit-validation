@@ -1,0 +1,25 @@
+protocol_id: nanoscope-spm-parser-pilot-v0.1
+mode: FROZEN_EXTERNAL_CONFIRMATION
+state: READY_FOR_IMPLEMENTATION
+input_format: Bruker/Digital Instruments Nanoscope III .spm
+selection_rule: development fixed; Lancaster records SHA-256 sorted before implementation
+incident: ACCIDENTAL_PRE_FREEZE_UNBLINDING
+incident_effect: external_confirmation_is_preregistered_but_not_blind
+metrics: [Sa, Sq, Sz]
+preprocessing:
+  leveling: forbidden
+  filtering: forbidden
+  line_correction: forbidden
+  interpolation: forbidden
+  resampling: forbidden
+tracks:
+  parser_fidelity: {thresholds: null}
+  roughness:
+    numeric_unit: nm
+    absolute_tolerance_nm: 1.0e-6
+    relative_tolerance: 1.0e-6
+claims:
+  - Nanoscope support remains PARTIAL and limited to demonstrated variants.
+  - External confirmation is not a blind holdout.
+  - A future blind holdout requires newly acquired, unobserved data.
+  - No physical validation claim is permitted.
