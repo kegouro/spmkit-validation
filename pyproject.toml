@@ -19,3 +19,4 @@ dependencies = [
 
 [project.scripts]
 spmkit-validation = "spmkit_validation.cli:main"
+spmkit-validation-classify = "spmkit_validation.dataset_classifier:main"

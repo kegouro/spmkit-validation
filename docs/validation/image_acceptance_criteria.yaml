@@ -1,0 +1,114 @@
+# Criterios de Aceptación para Validación de Metrología de Imagen (v0.1)
+
+claims:
+  - identificador: MET-IMG-01
+    mensurando: "Carga de matriz 2D en unidades físicas"
+    entrada: "Archivo nativo de instrumento (.nid, .gwy)"
+    salida: "Matriz Z"
+    unidad: "m"
+    rango_previsto: "[-1e-5, 1e-5]"
+    precondiciones: "Canal Z válido y metadatos intactos"
+    factores_influencia: "Constantes de calibración (Dim2Min, Dim2Range), tipos de datos (int32, int16), factor de conversión"
+    referencia_o_ground_truth: "Exportación cruda (TXT/CSV) generada por el software de fábrica o Gwyddion"
+    metrica_comparacion: "Diferencia relativa máxima"
+    criterio_aceptacion:
+      status: TODO-SCIENTIFIC-DECISION
+      value: null
+      rationale: "Acceptance margin must be defined before examining campaign results."
+    estado_evidencia: experimental
+
+  - identificador: MET-IMG-02
+    mensurando: "Orientación y escala (X, Y)"
+    entrada: "Archivo nativo de instrumento (.nid, .gwy)"
+    salida: "Tupla (shape, x_range, y_range, direction)"
+    unidad: "m"
+    rango_previsto: "[1e-9, 1e-3]"
+    precondiciones: "Canal Z válido y metadatos de escaneo intactos"
+    factores_influencia: "Dirección de rastreo (forward/backward), origen top-left vs bottom-left"
+    referencia_o_ground_truth: "Dimensiones y forma reportadas por el software de fábrica o Gwyddion"
+    metrica_comparacion: "Igualdad exacta de forma y diferencia relativa máxima de escalas espaciales"
+    criterio_aceptacion:
+      status: TODO-SCIENTIFIC-DECISION
+      value: null
+      rationale: "Acceptance margin must be defined before examining campaign results."
+    estado_evidencia: experimental
+
+  - identificador: MET-IMG-03
+    mensurando: "Nivelado por plano (Plane fit)"
+    entrada: "Matriz Z cruda (unidades físicas) y máscara (opcional)"
+    salida: "Matriz Z nivelada"
+    unidad: "m"
+    rango_previsto: "[-1e-5, 1e-5]"
+    precondiciones: "Matriz no vacía, varianza > 0"
+    factores_influencia: "Presencia de nan, algoritmo de mínimos cuadrados, recortes de borde"
+    referencia_o_ground_truth: "Salida del algoritmo de nivelado por plano de Gwyddion (o matriz analítica generada (phantom))"
+    metrica_comparacion: "Diferencia absoluta máxima pixel a pixel"
+    criterio_aceptacion:
+      status: TODO-SCIENTIFIC-DECISION
+      value: null
+      rationale: "Acceptance margin must be defined before examining campaign results."
+    estado_evidencia: experimental
+
+  - identificador: MET-IMG-04
+    mensurando: "Rugosidad aritmética media (Sa)"
+    entrada: "Matriz Z nivelada"
+    salida: "Valor escalar (Sa)"
+    unidad: "m"
+    rango_previsto: "[1e-12, 1e-5]"
+    precondiciones: "Matriz nivelada centrada en cero"
+    factores_influencia: "Método de nivelado previo, interpolación de bordes, manejo de pixels ignorados (NaNs)"
+    referencia_o_ground_truth: "Valor ISO 25178 analítico de un phantom o benchmark de referencia"
+    metrica_comparacion: "Diferencia relativa"
+    criterio_aceptacion:
+      status: TODO-SCIENTIFIC-DECISION
+      value: null
+      rationale: "Acceptance margin must be defined before examining campaign results."
+    estado_evidencia: experimental
+
+  - identificador: MET-IMG-05
+    mensurando: "Rugosidad cuadrática media (Sq)"
+    entrada: "Matriz Z nivelada"
+    salida: "Valor escalar (Sq)"
+    unidad: "m"
+    rango_previsto: "[1e-12, 1e-5]"
+    precondiciones: "Matriz nivelada centrada en cero"
+    factores_influencia: "Método de nivelado previo, interpolación de bordes, manejo de pixels ignorados (NaNs)"
+    referencia_o_ground_truth: "Valor ISO 25178 analítico de un phantom o benchmark de referencia"
+    metrica_comparacion: "Diferencia relativa"
+    criterio_aceptacion:
+      status: TODO-SCIENTIFIC-DECISION
+      value: null
+      rationale: "Acceptance margin must be defined before examining campaign results."
+    estado_evidencia: experimental
+
+  - identificador: MET-IMG-06
+    mensurando: "Altura máxima pico a valle (Sz)"
+    entrada: "Matriz Z nivelada"
+    salida: "Valor escalar (Sz)"
+    unidad: "m"
+    rango_previsto: "[1e-12, 1e-4]"
+    precondiciones: "Ninguna anomalía masiva que deba filtrarse previamente (Sz es muy sensible a valores atípicos aislados)"
+    factores_influencia: "Filtros paso bajo, picos espurios, ruido electrónico impulsivo"
+    referencia_o_ground_truth: "Valor ISO 25178 analítico de un phantom o benchmark de referencia"
+    metrica_comparacion: "Diferencia relativa"
+    criterio_aceptacion:
+      status: TODO-SCIENTIFIC-DECISION
+      value: null
+      rationale: "Acceptance margin must be defined before examining campaign results."
+    estado_evidencia: experimental
+
+  - identificador: MET-IMG-07
+    mensurando: "Exportación de resultados (CSV/JSON)"
+    entrada: "Resultados numéricos del core"
+    salida: "Archivo en disco (CSV/JSON)"
+    unidad: "N/A"
+    rango_previsto: "N/A"
+    precondiciones: "Estructuras (dataclass) válidas con campos poblados"
+    factores_influencia: "Locale (formato de decimales), codificación de texto, fidelidad de coma flotante en texto"
+    referencia_o_ground_truth: "Regeneración idéntica del objeto a partir de deserializar el archivo guardado"
+    metrica_comparacion: "Identidad byte a byte (round-trip)"
+    criterio_aceptacion:
+      status: TODO-SCIENTIFIC-DECISION
+      value: null
+      rationale: "Acceptance margin must be defined before examining campaign results."
+    estado_evidencia: experimental
