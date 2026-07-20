@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "campaign_id": "native-ibw-parser-pilot-v0.1",
+  "state": "FROZEN_FOR_IMPLEMENTATION",
+  "lineage": {
+    "incident_audit_commit": "4ecd4d1da8de00c63837c42755bc08140b2b8246",
+    "metadata_preflight_commit": "dea13b6b02eb5903797933e09f9f4cb6a7e179b1"
+  },
+  "metadata_evidence": {
+    "allowlist_sha256": "690e02664b024b54574884cd7175dcb4a9b124f59365b7944d2a7fc828645bfa",
+    "payload_bytes_read": 0,
+    "scientific_data_observed": false,
+    "unique_hashes": 14,
+    "structural_family_count": 1
+  },
+  "selection": {
+    "inputs": ["declared_shape", "sha256"],
+    "sort": "full_sha256_ascending_within_shape",
+    "roles": {"DEVELOPMENT": 4, "BLIND_HOLDOUT": 2, "BLIND_RESERVE": 8}
+  },
+  "parser_scope": "limited native Igor Binary Wave v5 image parser",
+  "cases": [
+    {"role": "DEVELOPMENT", "sha256": "0432ad223efa0e93bddcef5f3340836b5020b739c120b1acb0e6a7eab4d7cbda", "shape": [256, 256, 4]},
+    {"role": "DEVELOPMENT", "sha256": "0456647e565086660dca8efb42949a15c92bfd6881ccca4776177a37bc38577f", "shape": [256, 256, 4]},
+    {"role": "DEVELOPMENT", "sha256": "0f013d0e05af4708c139670ffdd8cc24081a357d4c5b48dbd5f76b7b996ec18a", "shape": [256, 256, 4]},
+    {"role": "DEVELOPMENT", "sha256": "3b4a5fb84db31b22e6ce3d0b3a5869c1903ea29e8ed23f42806689e4b8b56a04", "shape": [1024, 1024, 3]},
+    {"role": "BLIND_HOLDOUT", "sha256": "41bd5bd2f24b951d91683d721c4e4bef7fb5ae9aea97347c9e6ca9cb83ac9618", "shape": [256, 256, 4]},
+    {"role": "BLIND_RESERVE", "sha256": "597c75fdcb0a5ffcf989f689e6accbf670e6685a534b08aed32fb98c5c0e87e1", "shape": [256, 256, 4]},
+    {"role": "BLIND_RESERVE", "sha256": "7373a67cd0f72b24cc0a7f66f69b0fd2c0eb070336cca2a133fcbdd11d0024ba", "shape": [256, 256, 4]},
+    {"role": "BLIND_RESERVE", "sha256": "7a271e5dbd8887595ecf8957329c3a1b062cefdfeb4905d456d92ceaaaa92180", "shape": [256, 256, 4]},
+    {"role": "BLIND_HOLDOUT", "sha256": "8bb6dc4af70e8f2d78fe2e27c67a43a29a2ca2028efef92125215d76c8ab0250", "shape": [1024, 1024, 3]},
+    {"role": "BLIND_RESERVE", "sha256": "b4111b7e26a86184c4479212b33c9f9dc77708c6e829e4b2ab3b709f02045f25", "shape": [256, 256, 4]},
+    {"role": "BLIND_RESERVE", "sha256": "d10772bc4e85071e9d9c25269e2dcabeb4de3c420b2848df386033e55630fa16", "shape": [256, 256, 4]},
+    {"role": "BLIND_RESERVE", "sha256": "e125e35d8f96b85eec5d337b188e548e48a248968561b607ce69773ae8d5db1d", "shape": [256, 256, 4]},
+    {"role": "BLIND_RESERVE", "sha256": "e3da86cfef9019b2553dc8025ccbeb3b1b4111a9c9266efea9c18287f4855b07", "shape": [256, 256, 4]},
+    {"role": "BLIND_RESERVE", "sha256": "fa3c6af0f5c859158c1dd593514544539c38af150cd32ddc3d1f3da8d98969de", "shape": [256, 256, 4]}
+  ]
+}
