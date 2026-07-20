@@ -1,0 +1,32 @@
+schema_version: "1.0"
+title: "IBW metadata-only preflight v0.1"
+lineage:
+  incident: "ACCIDENTAL_OUT_OF_SCOPE_NUMERIC_EMISSION"
+  incident_audit_commit: "4ecd4d1da8de00c63837c42755bc08140b2b8246"
+  incident_decision: "IBW_PANEL_BLINDNESS_PRESERVED"
+  spmkit_origin_main: "bf94bebc3f796fa53d991ab9a99dbb6ef04f9a8b"
+scope:
+  candidate_count: 14
+  path_policy: "exact allowlist only"
+  directory_traversal: false
+  non_allowlist_opening: false
+  array_materialization: false
+  scientific_value_observation: false
+bounded_header_inspection:
+  maximum_bytes_per_file: 4096
+  payload_reading: false
+  permitted_fields:
+    - "format version"
+    - "byte order"
+    - "header layout"
+    - "declared numeric type"
+    - "declared dimensions and shape"
+    - "declared payload offset"
+acceptance:
+  non_allowlist_files_opened: 0
+  payload_bytes_read: 0
+  scientific_data_observed: false
+result:
+  structural_result: "14 HEADER_VALID"
+  route: "IMPLEMENT_LIMITED_NATIVE_IBW_PARSER"
+  evidence_level: "LEVEL 1 SOFTWARE_VERIFIED"
