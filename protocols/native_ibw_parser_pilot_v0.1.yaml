@@ -1,0 +1,42 @@
+protocol_id: native-ibw-parser-pilot-v0.1
+state: FROZEN_FOR_IMPLEMENTATION
+lineage:
+  incident_audit_commit: "4ecd4d1da8de00c63837c42755bc08140b2b8246"
+  metadata_preflight_commit: "dea13b6b02eb5903797933e09f9f4cb6a7e179b1"
+  incident: "ACCIDENTAL_OUT_OF_SCOPE_NUMERIC_EMISSION"
+  blindness_decision: "IBW_PANEL_BLINDNESS_PRESERVED"
+input_policy:
+  source: "curated metadata from the metadata-preflight commit"
+  payload_bytes_observed: 0
+  scientific_data_observed: false
+  selection_inputs: [declared_shape, sha256]
+  prohibited_selection_inputs: [name, size, source, experimental_notes, instrumental_metadata, payload]
+selection_rule:
+  group_by: declared_shape
+  sort_within_group: full_sha256_ascending
+  shape_1024x1024x3: [DEVELOPMENT, BLIND_HOLDOUT]
+  shape_256x256x4: [DEVELOPMENT, DEVELOPMENT, DEVELOPMENT, BLIND_HOLDOUT, BLIND_RESERVE, BLIND_RESERVE, BLIND_RESERVE, BLIND_RESERVE, BLIND_RESERVE, BLIND_RESERVE, BLIND_RESERVE, BLIND_RESERVE]
+roles:
+  DEVELOPMENT: 4
+  BLIND_HOLDOUT: 2
+  BLIND_RESERVE: 8
+implementation_contract:
+  claim: "limited native Igor Binary Wave v5 image parser"
+  supported: [IBW_v5, little_endian, FP32, observed_v5_header_layout, declared_1024x1024x3, declared_256x256x4]
+  required_metadata: [shape, physical_dimensions, units, orientation, data_scale]
+  explicit_errors: [unsupported_version, big_endian, unsupported_numeric_type, truncated_header, invalid_offsets, truncated_payload, unsupported_dimensionality]
+  forbidden_dependencies: [Gwyddion, afmformats]
+  prohibited_inputs: [BLIND_HOLDOUT, BLIND_RESERVE]
+  preserves: [Sa, Sq, Sz]
+post_implementation_confirmation:
+  immutable_parser_commit_required: true
+  cases: BLIND_HOLDOUT
+  reference: "Gwyddion 2.71"
+  comparisons: [objects_or_channels, shape, physical_dimensions, units, orientation, normalized_nm_matrix, max_rms_pixel_delta, Sa, Sq, Sz]
+  atol_nm: 1.0e-6
+  rtol: 1.0e-6
+  holdout_correction_policy: "no parser correction in v0.1; use v0.2 and new holdout data"
+claims:
+  before_holdout: "LEVEL 1 SOFTWARE_VERIFIED at most"
+  after_success: "LEVEL 3 CROSS_VALIDATED only for the observed family and two declared shapes"
+  limitations: [one_holdout_per_shape, no_general_IBW_coverage, no_force_spectroscopy_claim, no_physical_validation]
