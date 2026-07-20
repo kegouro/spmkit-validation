@@ -10,6 +10,7 @@ DESIGN = ROOT / "campaigns/design/native_ibw_parser_pilot_v0.1.jsonl"
 LOCK = ROOT / "locks/native_ibw_parser_pilot_v0.1.json"
 ALLOWLIST = ROOT / "evidence/ibw/ibw_metadata_preflight_v0.1_allowlist.json"
 INVENTORY = ROOT / "evidence/ibw/ibw_metadata_preflight_v0.1_structural_inventory.json"
+CORRIGENDUM = ROOT / "docs/campaigns/native_ibw_parser_pilot_v0.1_corrigendum.md"
 
 
 def test_revised_metadata_only_selection_is_complete_and_disjoint() -> None:
@@ -34,7 +35,10 @@ def test_revised_metadata_only_selection_is_complete_and_disjoint() -> None:
         expected.update({value: "BLIND_RESERVE" for value in hashes[development_count + 1 :]})
 
     actual = {row["sha256"]: row["role"] for row in rows}
+    actual_paths = {row["sha256"]: row["relative_path"] for row in rows}
+    expected_paths = {row["sha256"]: row["relative_path"] for row in allowlist["candidates"]}
     assert expected == actual
+    assert expected_paths == actual_paths
     assert len(actual) == 14 == len(set(actual))
     assert list(actual.values()).count("DEVELOPMENT") == 4
     assert list(actual.values()).count("BLIND_HOLDOUT") == 2
@@ -44,7 +48,12 @@ def test_revised_metadata_only_selection_is_complete_and_disjoint() -> None:
     assert all(tuple(row["declared_shape"]) == (256, 256, 4) for row in rows if row["role"] == "BLIND_RESERVE")
     assert lock["metadata_evidence"]["payload_bytes_read"] == 0
     assert lock["metadata_evidence"]["scientific_data_observed"] is False
-    serialized = "\n".join([LOCK.read_text(), DESIGN.read_text()])
+    corrigendum = CORRIGENDUM.read_text()
+    assert "FREEZE_PATH_MAPPING_CORRECTION" in corrigendum
+    assert "fa3c6af0f5c859158c1dd593514544539c38af150cd32ddc3d1f3da8d98969de" in corrigendum
+    assert "13-r45_30000ibw.ibw" in corrigendum
+    serialized = "\n".join([LOCK.read_text(), DESIGN.read_text(), corrigendum])
     assert "/Users/" not in serialized
     assert "file://" not in serialized
     assert "@" not in serialized
+    assert not any(token in serialized.lower() for token in ("minimum", "maximum", "mean", "rms", "preview"))
