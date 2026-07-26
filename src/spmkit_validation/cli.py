@@ -9,6 +9,18 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+from spmkit_validation.execution import (
+    CampaignExecutionError,
+    execute_frozen_campaign,
+    populate_result_bundle,
+    prepare_synthetic_roughness_campaign,
+    verify_result_snapshot,
+    write_execution_receipt,
+)
+from spmkit_validation.execution.issues import (
+    CampaignExecutionIssueCategory,
+    execution_issue,
+)
 from spmkit_validation.lifecycle import (
     LifecycleError,
     freeze_bundle,
@@ -27,6 +39,7 @@ EXIT_ARTIFACT = 3
 EXIT_TAMPERING = 4
 EXIT_FILESYSTEM = 5
 EXIT_INCOMPLETE = 6
+EXIT_EXECUTION = 7
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -65,10 +78,47 @@ def _build_parser() -> argparse.ArgumentParser:
     snapshot.add_argument("receipt_path", metavar="RECEIPT.json", type=Path)
     snapshot.add_argument("--artifact-root", type=Path)
     snapshot.add_argument("--json", action="store_true", dest="json_output")
+
+    campaign = commands.add_parser("campaign", help="synthetic campaign execution")
+    campaign_operations = campaign.add_subparsers(dest="campaign_command")
+
+    prepare = campaign_operations.add_parser(
+        "prepare-synthetic-roughness",
+        help="prepare six deterministic Sa/Sq/Sz cases without running the SUT",
+    )
+    prepare.add_argument("--output-dir", required=True, type=Path)
+    prepare.add_argument("--created-at", default="2026-07-26T08:00:00Z")
+    prepare.add_argument("--predeclared-at", default="2026-07-26T08:01:00Z")
+    prepare.add_argument("--generator-commit")
+    prepare.add_argument("--json", action="store_true", dest="json_output")
+
+    execute = campaign_operations.add_parser(
+        "execute", help="run a verified frozen protocol against a SUT wheel"
+    )
+    execute.add_argument("protocol_bundle", metavar="PROTOCOL_BUNDLE.json", type=Path)
+    execute.add_argument("freeze_receipt", metavar="FREEZE_RECEIPT.json", type=Path)
+    execute.add_argument("--artifact-root", required=True, type=Path)
+    execute.add_argument("--sut-wheel", required=True, type=Path)
+    execute.add_argument("--output-dir", required=True, type=Path)
+    execute.add_argument("--sut-executable", type=Path, help=argparse.SUPPRESS)
+    execute.add_argument("--timeout-seconds", type=float, default=60.0)
+    execute.add_argument("--json", action="store_true", dest="json_output")
+
+    result = campaign_operations.add_parser(
+        "verify-result", help="verify result receipt, protocol continuity and artifacts"
+    )
+    result.add_argument("result_bundle", metavar="RESULT_BUNDLE.json", type=Path)
+    result.add_argument("execution_receipt", metavar="EXECUTION_RECEIPT.json", type=Path)
+    result.add_argument("--protocol-bundle", required=True, type=Path)
+    result.add_argument("--protocol-receipt", required=True, type=Path)
+    result.add_argument("--artifact-root", required=True, type=Path)
+    result.add_argument("--json", action="store_true", dest="json_output")
     return parser
 
 
-def _issues_payload(error: ValidationBundleError | LifecycleError) -> list[dict[str, str]]:
+def _issues_payload(
+    error: ValidationBundleError | LifecycleError | CampaignExecutionError,
+) -> list[dict[str, str]]:
     return [
         {
             "category": issue.category.value,
@@ -97,7 +147,7 @@ def _emit(payload: dict[str, Any], *, json_output: bool, human: str) -> None:
 
 def _emit_expected_error(
     operation: str,
-    error: ValidationBundleError | LifecycleError,
+    error: ValidationBundleError | LifecycleError | CampaignExecutionError,
     *,
     json_output: bool,
 ) -> None:
@@ -128,6 +178,17 @@ def _lifecycle_error_exit(error: LifecycleError) -> int:
         for issue in error.issues
     ):
         return EXIT_ARTIFACT
+    return EXIT_INVALID
+
+
+def _campaign_error_exit(error: CampaignExecutionError) -> int:
+    categories = {issue.category.value for issue in error.issues}
+    if "FILESYSTEM" in categories:
+        return EXIT_FILESYSTEM
+    if "ARTIFACT" in categories:
+        return EXIT_ARTIFACT
+    if "EXECUTION" in categories or "OUTPUT" in categories:
+        return EXIT_EXECUTION
     return EXIT_INVALID
 
 
@@ -241,6 +302,145 @@ def _command_verify_snapshot(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def _command_prepare_campaign(args: argparse.Namespace) -> int:
+    try:
+        prepared = prepare_synthetic_roughness_campaign(
+            args.output_dir,
+            created_at=args.created_at,
+            predeclared_at=args.predeclared_at,
+            generator_commit=args.generator_commit,
+        )
+    except (CampaignExecutionError, ValidationBundleError) as exc:
+        _emit_expected_error(
+            "campaign.prepare-synthetic-roughness", exc, json_output=args.json_output
+        )
+        if isinstance(exc, CampaignExecutionError):
+            return _campaign_error_exit(exc)
+        return EXIT_INVALID
+    payload = {
+        "operation": "campaign.prepare-synthetic-roughness",
+        **prepared.to_dict(),
+        "status": "DRAFT_PREPARED",
+    }
+    _emit(
+        payload,
+        json_output=args.json_output,
+        human=f"DRAFT_PREPARED campaign_id={payload['campaign_id']} cases=6",
+    )
+    return EXIT_PASS
+
+
+def _ground_truth_document(protocol: dict[str, Any], artifact_root: Path) -> dict[str, Any]:
+    artifact = next(
+        item
+        for item in protocol["evidence"]
+        if item["artifact_id"] == "artifact.reference.ground-truth"
+    )
+    path = artifact_root / artifact["relative_uri"]
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("ground truth artifact root must be an object")
+    return value
+
+
+def _command_execute_campaign(args: argparse.Namespace) -> int:
+    try:
+        execution = execute_frozen_campaign(
+            args.protocol_bundle,
+            args.freeze_receipt,
+            artifact_root=args.artifact_root,
+            sut_wheel=args.sut_wheel,
+            output_dir=args.output_dir,
+            sut_executable=args.sut_executable,
+            timeout_seconds=args.timeout_seconds,
+        )
+        protocol = load_validation_bundle(args.protocol_bundle)
+        truth = _ground_truth_document(protocol, args.artifact_root)
+        result_bundle = populate_result_bundle(protocol, execution, truth)
+        published = write_execution_receipt(
+            result_bundle,
+            frozen_protocol_path=args.protocol_bundle,
+            freeze_receipt_path=args.freeze_receipt,
+            artifact_root=args.artifact_root,
+            output_dir=args.output_dir / "result-snapshot",
+            wheel_sha256=execution.wheel_sha256,
+            started_at=execution.started_at,
+            completed_at=execution.completed_at,
+        )
+    except (
+        CampaignExecutionError,
+        LifecycleError,
+        ValidationBundleError,
+        ValueError,
+        OSError,
+    ) as exc:
+        if not isinstance(
+            exc, (CampaignExecutionError, LifecycleError, ValidationBundleError)
+        ):
+            error = CampaignExecutionError(
+                [
+                    execution_issue(
+                        CampaignExecutionIssueCategory.INPUT,
+                        "EXECUTION.INPUT_FAILED",
+                        "",
+                        str(exc),
+                    )
+                ]
+            )
+        else:
+            error = exc
+        _emit_expected_error("campaign.execute", error, json_output=args.json_output)
+        if isinstance(error, CampaignExecutionError):
+            return _campaign_error_exit(error)
+        if isinstance(error, LifecycleError):
+            return _lifecycle_error_exit(error)
+        return EXIT_INVALID
+    statuses = {
+        status: sum(run["execution_status"] == status for run in execution.runs)
+        for status in ("COMPLETED", "ERROR", "ABORTED")
+    }
+    payload = {
+        "operation": "campaign.execute",
+        "status": "RESULT_PUBLISHED",
+        "campaign_id": execution.campaign_id,
+        "wheel_sha256": execution.wheel_sha256,
+        "result_bundle_sha256": published.result_bundle_sha256,
+        "execution_receipt_sha256": published.execution_receipt_sha256,
+        "runs": statuses,
+        "comparisons": len(result_bundle["comparisons"]),
+    }
+    _emit(
+        payload,
+        json_output=args.json_output,
+        human=(
+            f"RESULT_PUBLISHED sha256={published.result_bundle_sha256} "
+            f"runs={len(execution.runs)} comparisons={len(result_bundle['comparisons'])}"
+        ),
+    )
+    return EXIT_EXECUTION if statuses["ERROR"] or statuses["ABORTED"] else EXIT_PASS
+
+
+def _command_verify_result(args: argparse.Namespace) -> int:
+    result = verify_result_snapshot(
+        args.result_bundle,
+        args.execution_receipt,
+        args.protocol_bundle,
+        args.protocol_receipt,
+        args.artifact_root,
+    )
+    payload = {"operation": "campaign.verify-result", **result.to_dict()}
+    _emit(
+        payload,
+        json_output=args.json_output,
+        human=f"{result.status} artifacts={result.artifact_status}",
+    )
+    if result.valid:
+        return EXIT_PASS
+    if result.status == "ARTIFACT_MISMATCH":
+        return EXIT_ARTIFACT
+    return EXIT_TAMPERING
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -250,16 +450,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command is None:
         parser.print_help()
         return EXIT_PASS
-    if args.command != "bundle" or args.bundle_command is None:
-        parser.print_help()
-        return EXIT_INVALID
-    handlers = {
-        "validate": _command_validate,
-        "verify-artifacts": _command_verify_artifacts,
-        "freeze": _command_freeze,
-        "verify-snapshot": _command_verify_snapshot,
-    }
-    return handlers[args.bundle_command](args)
+    if args.command == "bundle" and args.bundle_command is not None:
+        handlers = {
+            "validate": _command_validate,
+            "verify-artifacts": _command_verify_artifacts,
+            "freeze": _command_freeze,
+            "verify-snapshot": _command_verify_snapshot,
+        }
+        return handlers[args.bundle_command](args)
+    if args.command == "campaign" and args.campaign_command is not None:
+        campaign_handlers = {
+            "prepare-synthetic-roughness": _command_prepare_campaign,
+            "execute": _command_execute_campaign,
+            "verify-result": _command_verify_result,
+        }
+        return campaign_handlers[args.campaign_command](args)
+    parser.print_help()
+    return EXIT_INVALID
 
 
 if __name__ == "__main__":
