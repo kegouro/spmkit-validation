@@ -5,6 +5,18 @@ paquete y `schema_version` son conceptos relacionados pero distintos: un cambio
 de implementación compatible puede incrementar el paquete sin cambiar el
 lenguaje JSON aceptado.
 
+## Package 0.1.3 / execution receipt 0.1.0 — 2026-07-26
+
+Cambio operacional compatible; `schema_version = "0.1.0"` y los nueve schemas
+normativos permanecen sin cambios:
+
+- protocolo acumulativo nuevo con un caso de software y seis casos numéricos;
+- exportación exacta de tests por commit, blob y SHA-256 antes del freeze;
+- import probe aislado, JUnit estricto y un único wheel para los siete runs;
+- claims LEVEL 1/2 aceptados o rechazados por la semántica existente;
+- extensión opcional del receipt 0.1.0 con hashes JUnit/manifiesto y run IDs;
+- tests negativos para impedir LEVEL 2 con 18 PASS sin SOFTWARE_TEST válido.
+
 ## Package 0.1.2 / execution receipt 0.1.0 — 2026-07-26
 
 Cambio operacional compatible; `schema_version = "0.1.0"` y los nueve schemas

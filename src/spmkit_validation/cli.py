@@ -11,8 +11,11 @@ from typing import Any
 
 from spmkit_validation.execution import (
     CampaignExecutionError,
+    execute_cumulative_campaign,
     execute_frozen_campaign,
+    populate_cumulative_result_bundle,
     populate_result_bundle,
+    prepare_cumulative_verification_campaign,
     prepare_synthetic_roughness_campaign,
     verify_result_snapshot,
     write_execution_receipt,
@@ -92,6 +95,21 @@ def _build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--generator-commit")
     prepare.add_argument("--json", action="store_true", dest="json_output")
 
+    prepare_cumulative = campaign_operations.add_parser(
+        "prepare-cumulative-verification",
+        help="prepare one software and six numerical cases without running the SUT",
+    )
+    prepare_cumulative.add_argument("--output-dir", required=True, type=Path)
+    prepare_cumulative.add_argument("--sut-repository", required=True, type=Path)
+    prepare_cumulative.add_argument("--created-at", default="2026-07-26T08:00:00Z")
+    prepare_cumulative.add_argument("--predeclared-at", default="2026-07-26T08:01:00Z")
+    prepare_cumulative.add_argument("--generator-commit")
+    prepare_cumulative.add_argument(
+        "--sut-commit", default="11daf8879c9e3e098ce844778592525d4f2bdc53"
+    )
+    prepare_cumulative.add_argument("--sut-version", default="0.1.5.dev0")
+    prepare_cumulative.add_argument("--json", action="store_true", dest="json_output")
+
     execute = campaign_operations.add_parser(
         "execute", help="run a verified frozen protocol against a SUT wheel"
     )
@@ -103,6 +121,23 @@ def _build_parser() -> argparse.ArgumentParser:
     execute.add_argument("--sut-executable", type=Path, help=argparse.SUPPRESS)
     execute.add_argument("--timeout-seconds", type=float, default=60.0)
     execute.add_argument("--json", action="store_true", dest="json_output")
+
+    execute_cumulative = campaign_operations.add_parser(
+        "execute-cumulative",
+        help="run the frozen software suite then six numerical cases from one wheel",
+    )
+    execute_cumulative.add_argument(
+        "protocol_bundle", metavar="PROTOCOL_BUNDLE.json", type=Path
+    )
+    execute_cumulative.add_argument(
+        "freeze_receipt", metavar="FREEZE_RECEIPT.json", type=Path
+    )
+    execute_cumulative.add_argument("--artifact-root", required=True, type=Path)
+    execute_cumulative.add_argument("--sut-wheel", required=True, type=Path)
+    execute_cumulative.add_argument("--output-dir", required=True, type=Path)
+    execute_cumulative.add_argument("--software-timeout-seconds", type=float, default=120.0)
+    execute_cumulative.add_argument("--scientific-timeout-seconds", type=float, default=60.0)
+    execute_cumulative.add_argument("--json", action="store_true", dest="json_output")
 
     result = campaign_operations.add_parser(
         "verify-result", help="verify result receipt, protocol continuity and artifacts"
@@ -330,6 +365,40 @@ def _command_prepare_campaign(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def _command_prepare_cumulative(args: argparse.Namespace) -> int:
+    try:
+        prepared = prepare_cumulative_verification_campaign(
+            args.output_dir,
+            sut_repository=args.sut_repository,
+            created_at=args.created_at,
+            predeclared_at=args.predeclared_at,
+            generator_commit=args.generator_commit,
+            sut_commit=args.sut_commit,
+            sut_version=args.sut_version,
+        )
+    except (CampaignExecutionError, ValidationBundleError) as exc:
+        _emit_expected_error(
+            "campaign.prepare-cumulative-verification", exc, json_output=args.json_output
+        )
+        if isinstance(exc, CampaignExecutionError):
+            return _campaign_error_exit(exc)
+        return EXIT_INVALID
+    payload = {
+        "operation": "campaign.prepare-cumulative-verification",
+        **prepared.to_dict(),
+        "status": "DRAFT_PREPARED",
+    }
+    _emit(
+        payload,
+        json_output=args.json_output,
+        human=(
+            f"DRAFT_PREPARED campaign_id={payload['campaign_id']} "
+            f"cases={payload['case_count']}"
+        ),
+    )
+    return EXIT_PASS
+
+
 def _ground_truth_document(protocol: dict[str, Any], artifact_root: Path) -> dict[str, Any]:
     artifact = next(
         item
@@ -420,6 +489,104 @@ def _command_execute_campaign(args: argparse.Namespace) -> int:
     return EXIT_EXECUTION if statuses["ERROR"] or statuses["ABORTED"] else EXIT_PASS
 
 
+def _command_execute_cumulative(args: argparse.Namespace) -> int:
+    try:
+        execution = execute_cumulative_campaign(
+            args.protocol_bundle,
+            args.freeze_receipt,
+            artifact_root=args.artifact_root,
+            sut_wheel=args.sut_wheel,
+            output_dir=args.output_dir,
+            software_timeout_seconds=args.software_timeout_seconds,
+            scientific_timeout_seconds=args.scientific_timeout_seconds,
+        )
+        protocol = load_validation_bundle(args.protocol_bundle)
+        truth = _ground_truth_document(protocol, args.artifact_root)
+        result_bundle = populate_cumulative_result_bundle(protocol, execution, truth)
+        published = write_execution_receipt(
+            result_bundle,
+            frozen_protocol_path=args.protocol_bundle,
+            freeze_receipt_path=args.freeze_receipt,
+            artifact_root=args.artifact_root,
+            output_dir=args.output_dir / "result-snapshot",
+            wheel_sha256=execution.wheel_sha256,
+            started_at=execution.started_at,
+            completed_at=execution.completed_at,
+        )
+    except (
+        CampaignExecutionError,
+        LifecycleError,
+        ValidationBundleError,
+        ValueError,
+        OSError,
+    ) as exc:
+        if not isinstance(
+            exc, (CampaignExecutionError, LifecycleError, ValidationBundleError)
+        ):
+            error = CampaignExecutionError(
+                [
+                    execution_issue(
+                        CampaignExecutionIssueCategory.INPUT,
+                        "CUMULATIVE.INPUT_FAILED",
+                        "",
+                        str(exc),
+                    )
+                ]
+            )
+        else:
+            error = exc
+        _emit_expected_error("campaign.execute-cumulative", error, json_output=args.json_output)
+        if isinstance(error, CampaignExecutionError):
+            return _campaign_error_exit(error)
+        if isinstance(error, LifecycleError):
+            return _lifecycle_error_exit(error)
+        return EXIT_INVALID
+    summary = execution.software_test.junit_summary
+    software_payload = {
+        "status": execution.software_test.run["execution_status"],
+        **(
+            summary.to_dict()
+            if summary is not None
+            else {"tests": 0, "passed": 0, "failures": 0, "errors": 1, "skips": 0}
+        ),
+    }
+    scientific_statuses = {
+        status: sum(run["execution_status"] == status for run in execution.scientific.runs)
+        for status in ("COMPLETED", "ERROR", "ABORTED")
+    }
+    payload = {
+        "operation": "campaign.execute-cumulative",
+        "status": "RESULT_PUBLISHED",
+        "campaign_id": result_bundle["campaign"]["campaign_id"],
+        "wheel_sha256": execution.wheel_sha256,
+        "result_bundle_sha256": published.result_bundle_sha256,
+        "execution_receipt_sha256": published.execution_receipt_sha256,
+        "software_test": software_payload,
+        "scientific_runs": scientific_statuses,
+        "comparisons": len(result_bundle["comparisons"]),
+        "claims": [
+            {
+                "claim_id": claim["claim_id"],
+                "level": claim["level"],
+                "status": claim["status"],
+            }
+            for claim in result_bundle["claims"]
+        ],
+    }
+    _emit(
+        payload,
+        json_output=args.json_output,
+        human=(
+            f"RESULT_PUBLISHED sha256={published.result_bundle_sha256} "
+            f"software={software_payload['status']} scientific=6 comparisons=18"
+        ),
+    )
+    failed = software_payload["status"] != "COMPLETED" or any(
+        scientific_statuses[name] for name in ("ERROR", "ABORTED")
+    )
+    return EXIT_EXECUTION if failed else EXIT_PASS
+
+
 def _command_verify_result(args: argparse.Namespace) -> int:
     result = verify_result_snapshot(
         args.result_bundle,
@@ -460,8 +627,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return handlers[args.bundle_command](args)
     if args.command == "campaign" and args.campaign_command is not None:
         campaign_handlers = {
+            "prepare-cumulative-verification": _command_prepare_cumulative,
             "prepare-synthetic-roughness": _command_prepare_campaign,
             "execute": _command_execute_campaign,
+            "execute-cumulative": _command_execute_cumulative,
             "verify-result": _command_verify_result,
         }
         return campaign_handlers[args.campaign_command](args)

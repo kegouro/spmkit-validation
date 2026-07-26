@@ -40,6 +40,25 @@ spmkit-validation campaign verify-result RESULT/result-bundle.json \
 `make phase01c-gates` reproduce el flujo completo, incluida la repetición y
 las pruebas de tampering. No usa datos instrumentales ni declara LEVEL 3+.
 
+## Cumulative software and numerical workflow
+
+El paquete `0.1.3` añade un protocolo nuevo con una suite de software exportada
+por identidad Git y los seis casos sintéticos:
+
+```bash
+spmkit-validation campaign prepare-cumulative-verification \
+  --output-dir CAMPAIGN --sut-repository ../spmkit-sanitize
+spmkit-validation bundle freeze CAMPAIGN/draft-bundle.json \
+  --artifact-root CAMPAIGN --output-dir CAMPAIGN/protocol-snapshot
+spmkit-validation campaign execute-cumulative \
+  PROTOCOL/bundle.json PROTOCOL/freeze-receipt.json \
+  --artifact-root CAMPAIGN --sut-wheel SPMKIT.whl \
+  --output-dir CAMPAIGN/execution
+```
+
+`make phase01d-gates` reproduce el workflow desde wheels y verifica JUnit,
+claims acumulativos, repetición, continuidad y tampering.
+
 ## Ejecución Local
 
 El framework está automatizado usando `Make` y requiere que tanto `spmkit` como `spmkit-phantoms` residan en el mismo nivel de directorios:
