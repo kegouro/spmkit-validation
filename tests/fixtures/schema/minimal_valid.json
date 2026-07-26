@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "campaign": {
+    "campaign_id": "campaign.minimal.synthetic",
+    "title": "Minimal synthetic authoring bundle",
+    "objective": "Demonstrate the smallest structurally and semantically valid draft bundle.",
+    "protocol_version": "0.1.0",
+    "status": "DRAFT",
+    "created_at": "2026-01-01T00:00:00Z",
+    "frozen_at": null,
+    "system_under_test": {
+      "package_name": "spmkit",
+      "version": "0.1.5.dev0",
+      "git_commit": "11daf8879c9e3e098ce844778592525d4f2bdc53",
+      "repository": "https://github.com/kegouro/spmkit.git",
+      "ref": "chore/workspace-sanitize",
+      "platform": "synthetic-example-platform",
+      "environment_id": "environment.authoring"
+    },
+    "intended_validation_level": "LEVEL 0 — CLAIMED",
+    "determinism_requirement": "NUMERICALLY_REPEATABLE",
+    "limitations": [
+      "Draft-only fixture; it contains no execution or scientific evidence."
+    ],
+    "responsible_parties": [
+      {
+        "party_id": "party.author",
+        "name": "Synthetic fixture author",
+        "role": "protocol author"
+      }
+    ]
+  },
+  "datasets": [],
+  "references": [],
+  "cases": [],
+  "runs": [],
+  "comparisons": [],
+  "evidence": [],
+  "claims": []
+}
