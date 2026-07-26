@@ -13,10 +13,12 @@ from spmkit_validation.execution import (
     CampaignExecutionError,
     InstalledSUTEnvironment,
     execute_software_test,
+    install_sut_wheel_environment,
     parse_junit_xml,
     prepare_cumulative_verification_campaign,
     validate_import_probe,
 )
+from spmkit_validation.execution import runner as runner_module
 from spmkit_validation.execution.cumulative_protocol import SELECTED_SUITE_PATHS
 from spmkit_validation.lifecycle import freeze_bundle
 
@@ -182,6 +184,41 @@ def test_import_probe_requires_isolated_site_packages() -> None:
     checkout["resolved_inside_source_checkout"] = True
     with pytest.raises(CampaignExecutionError):
         validate_import_probe(checkout)
+
+
+def test_installed_environment_keeps_venv_python_entry_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    wheel = tmp_path / "spmkit.whl"
+    wheel.write_bytes(b"wheel")
+    base_python = tmp_path / "base-python"
+    base_python.write_bytes(b"python")
+
+    def fake_run(command, **_kwargs):
+        if command[1] == "venv":
+            venv = Path(command[-1])
+            (venv / "bin").mkdir(parents=True)
+            (venv / "bin/python").symlink_to(base_python)
+            executable = venv / "bin/spmkit"
+            executable.write_bytes(b"#!/bin/sh\n")
+            executable.chmod(0o755)
+            return subprocess.CompletedProcess(command, 0, "", "")
+        if command[1:3] == ["pip", "install"]:
+            return subprocess.CompletedProcess(command, 0, "", "")
+        if command[1:3] == ["pip", "freeze"]:
+            return subprocess.CompletedProcess(command, 0, "spmkit @ file:///wheel\n", "")
+        raise AssertionError(command)
+
+    monkeypatch.setattr(runner_module.shutil, "which", lambda _name: "/usr/bin/uv")
+    monkeypatch.setattr(runner_module.subprocess, "run", fake_run)
+    environment = install_sut_wheel_environment(
+        wheel, tmp_path / "execution", "0.1.5.dev0"
+    )
+
+    assert environment.python_executable == (
+        tmp_path / "execution/sut-venv/bin/python"
+    ).absolute()
+    assert environment.python_executable != environment.python_executable.resolve()
 
 
 def test_valid_software_test_runs_only_after_verified_freeze(tmp_path: Path) -> None:

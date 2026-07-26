@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from spmkit_validation.execution import (
@@ -96,6 +97,45 @@ def test_failed_junit_blocks_level_1_and_level_2(tmp_path: Path) -> None:
     for claim in contradicted["claims"]:
         claim["status"] = "SUPPORTED"
     assert "CLAIM.LEVEL_1_EVIDENCE_INSUFFICIENT" in _codes(contradicted)
+
+
+def test_missing_junit_is_preserved_as_valid_rejected_result(tmp_path: Path) -> None:
+    prepared, frozen, cumulative, _ = _populated(tmp_path)
+    software_run = copy.deepcopy(dict(cumulative.software_test.run))
+    software_run["output_artifact_ids"].remove("artifact.software-test.junit")
+    software_run["execution_status"] = "ERROR"
+    software_run["errors"] = [
+        {"code": "JUNIT_MISSING", "message": "pytest did not produce JUnit XML"}
+    ]
+    evidence = [
+        copy.deepcopy(dict(item))
+        for item in cumulative.software_test.evidence
+        if item["artifact_id"] != "artifact.software-test.junit"
+    ]
+    run_record = next(
+        item
+        for item in evidence
+        if item["artifact_id"] == "artifact.software-test.run-record"
+    )
+    run_record["source_artifact_ids"].remove("artifact.software-test.junit")
+    software = replace(
+        cumulative.software_test,
+        run=software_run,
+        evidence=tuple(evidence),
+        junit_summary=None,
+    )
+    failed = replace(cumulative, software_test=software)
+    frozen_bundle = json.loads(frozen.snapshot_path.read_text(encoding="utf-8"))
+    truth = json.loads(prepared.ground_truth_path.read_text(encoding="utf-8"))
+
+    bundle = populate_cumulative_result_bundle(frozen_bundle, failed, truth)
+
+    assert_valid_bundle(bundle)
+    assert {claim["status"] for claim in bundle["claims"]} == {"REJECTED"}
+    assert all(
+        "artifact.software-test.junit" not in claim["supported_evidence_ids"]
+        for claim in bundle["claims"]
+    )
 
 
 def test_level_1_without_linked_junit_evidence_is_rejected(tmp_path: Path) -> None:

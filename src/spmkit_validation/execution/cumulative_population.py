@@ -45,7 +45,14 @@ def _software_supported(execution: CumulativeExecutionResult) -> bool:
     )
 
 
-def _software_claim(software_supported: bool) -> dict[str, Any]:
+def _software_evidence_ids(execution: CumulativeExecutionResult) -> set[str]:
+    return {item["artifact_id"] for item in execution.software_test.evidence}
+
+
+def _software_claim(
+    software_supported: bool,
+    available_evidence_ids: set[str],
+) -> dict[str, Any]:
     return {
         "claim_id": "claim.software.roughness-wheel",
         "claim_text": (
@@ -65,14 +72,20 @@ def _software_claim(software_supported: bool) -> dict[str, Any]:
         },
         "supported_case_ids": [SOFTWARE_CASE_ID],
         "supported_comparison_ids": [],
-        "supported_evidence_ids": [
-            "artifact.software-test.suite-manifest",
-            "artifact.execution.sut-wheel",
-            IMPORT_PROBE_ARTIFACT_ID,
-            CLI_PROBE_ARTIFACT_ID,
-            JUNIT_ARTIFACT_ID,
-            SOFTWARE_RUN_RECORD_ARTIFACT_ID,
-        ],
+        "supported_evidence_ids": sorted(
+            {
+                "artifact.software-test.suite-manifest",
+                "artifact.execution.sut-wheel",
+                IMPORT_PROBE_ARTIFACT_ID,
+                CLI_PROBE_ARTIFACT_ID,
+                SOFTWARE_RUN_RECORD_ARTIFACT_ID,
+                *(
+                    [JUNIT_ARTIFACT_ID]
+                    if JUNIT_ARTIFACT_ID in available_evidence_ids
+                    else []
+                ),
+            }
+        ),
         "limitations": [
             "Selected non-GUI suite only; no claim is made for unselected SPM-Kit features.",
             "Software tests and implementation share repository authorship.",
@@ -86,6 +99,7 @@ def _numeric_claim(
     numeric_cases: list[Mapping[str, Any]],
     comparisons: list[Mapping[str, Any]],
     software_supported: bool,
+    available_evidence_ids: set[str],
 ) -> dict[str, Any]:
     selected = [item for item in comparisons if item["measurand_id"] == measurand]
     comparisons_pass = bool(selected) and all(item["outcome"] == "PASS" for item in selected)
@@ -136,8 +150,12 @@ def _numeric_claim(
                 "artifact.protocol.tolerance-budget",
                 IMPORT_PROBE_ARTIFACT_ID,
                 CLI_PROBE_ARTIFACT_ID,
-                JUNIT_ARTIFACT_ID,
                 SOFTWARE_RUN_RECORD_ARTIFACT_ID,
+                *(
+                    [JUNIT_ARTIFACT_ID]
+                    if JUNIT_ARTIFACT_ID in available_evidence_ids
+                    else []
+                ),
                 *result_evidence,
             }
         ),
@@ -196,14 +214,16 @@ def populate_cumulative_result_bundle(
         case for case in bundle["cases"] if case["case_id"] in numeric_case_ids
     ]
     software_supported = _software_supported(execution_result)
+    available_evidence_ids = _software_evidence_ids(execution_result)
     bundle["claims"] = [
-        _software_claim(software_supported),
+        _software_claim(software_supported, available_evidence_ids),
         *[
             _numeric_claim(
                 measurand,
                 numeric_cases,
                 bundle["comparisons"],
                 software_supported,
+                available_evidence_ids,
             )
             for measurand in MEASURANDS
         ],

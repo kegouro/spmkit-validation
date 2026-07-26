@@ -370,11 +370,15 @@ def install_sut_wheel_environment(
             continue
         name = value.partition(" @ ")[0]
         dependencies.append(f"spmkit=={sut_version}" if name == "spmkit" else value)
+    python_executable = venv / "bin" / "python"
+    _safe_regular_file(
+        python_executable, "EXECUTION.PYTHON_NOT_INSTALLED", "/sut_wheel"
+    )
     return InstalledSUTEnvironment(
         executable=executable,
-        python_executable=_safe_regular_file(
-            venv / "bin" / "python", "EXECUTION.PYTHON_NOT_INSTALLED", "/sut_wheel"
-        ),
+        # Keep the venv entry path: resolving this symlink selects the base interpreter
+        # and silently drops the venv's site-packages from isolated import probes.
+        python_executable=python_executable.absolute(),
         wheel_sha256=wheel_sha256,
         wheel_size_bytes=wheel_size,
         installation="wheel-clean-venv",
