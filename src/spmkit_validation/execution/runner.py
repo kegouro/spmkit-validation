@@ -247,13 +247,16 @@ def _validate_protocol_before_subprocess(
 
 
 def _prepare_sut_executable(
-    wheel: Path, output_dir: Path, override: str | Path | None
-) -> tuple[Path, str]:
+    wheel: Path,
+    output_dir: Path,
+    override: str | Path | None,
+    sut_version: str,
+) -> tuple[Path, str, tuple[str, ...]]:
     if override is not None:
         executable = _safe_regular_file(
             Path(override), "EXECUTION.INVALID_SUT_EXECUTABLE", "/sut_executable"
         )
-        return executable, "test-override"
+        return executable, "test-override", ("fake-executable-test-override",)
     uv = shutil.which("uv")
     if uv is None:
         raise CampaignExecutionError(
@@ -312,7 +315,31 @@ def _prepare_sut_executable(
     executable = _safe_regular_file(
         venv / "bin" / "spmkit", "EXECUTION.SPMKIT_NOT_INSTALLED", "/sut_wheel"
     )
-    return executable, "wheel-clean-venv"
+    installed = subprocess.run(
+        [uv, "pip", "freeze", "--python", str(venv / "bin" / "python")],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if installed.returncode != 0:
+        raise CampaignExecutionError(
+            [
+                execution_issue(
+                    CampaignExecutionIssueCategory.EXECUTION,
+                    "EXECUTION.DEPENDENCY_CAPTURE_FAILED",
+                    "",
+                    installed.stderr.strip() or "uv pip freeze failed",
+                )
+            ]
+        )
+    dependencies = []
+    for line in installed.stdout.splitlines():
+        value = line.strip()
+        if not value:
+            continue
+        name = value.partition(" @ ")[0]
+        dependencies.append(f"spmkit=={sut_version}" if name == "spmkit" else value)
+    return executable, "wheel-clean-venv", tuple(sorted(dependencies))
 
 
 def _scientific_environment(executable: Path) -> dict[str, str]:
@@ -413,7 +440,10 @@ def execute_frozen_campaign(
             ]
         ) from exc
 
-    executable, environment_kind = _prepare_sut_executable(wheel, output_resolved, sut_executable)
+    sut_version = protocol["campaign"]["system_under_test"]["version"]
+    executable, environment_kind, installed_dependencies = _prepare_sut_executable(
+        wheel, output_resolved, sut_executable, sut_version
+    )
     environment = _scientific_environment(executable)
     help_result = subprocess.run(
         [str(executable), "--help"],
@@ -448,9 +478,10 @@ def execute_frozen_campaign(
         "installation": environment_kind,
         "wheel_sha256": wheel_sha256,
         "wheel_size_bytes": wheel_size,
-        "sut_package_version": protocol["campaign"]["system_under_test"]["version"],
+        "sut_package_version": sut_version,
         "sut_commit": protocol["campaign"]["system_under_test"]["git_commit"],
         "command_contract": ["spmkit", "analyze", "--channel", "Z-Axis", "--level", "none"],
+        "installed_dependencies": list(installed_dependencies),
     }
     environment_path = output_resolved / "environment.json"
     _write_exclusive(environment_path, canonical_bundle_bytes(environment_document))
