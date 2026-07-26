@@ -1,0 +1,46 @@
+                                                                                
+ Usage: spmkit [OPTIONS] COMMAND [ARGS]...                                      
+                                                                                
+ Analizador open-source de datos AFM/KPFM (SPM Lab UTFSM).                      
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --version  -V        Muestra la versión y sale.                              │
+│ --help               Show this message and exit.                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ info         Muestra metadatos y canales del archivo.                        │
+│ roughness    Calcula parámetros de rugosidad (ISO 25178) de un canal.        │
+│ psd          Análisis espectral: dimensión fractal, Hurst y longitud de      │
+│              correlación.                                                    │
+│ analyze      Pipeline completo: rugosidad (+ KPFM si hay canal) → CSV +      │
+│              JSON.                                                           │
+│ nanomech     Ajusta una curva fuerza-distancia (Hertz/DMT/Sneddon) y estima  │
+│              el módulo de Young.                                             │
+│ grains       Detecta granos/partículas y muestra estadísticas de tamaño.     │
+│ batch        Procesa todos los archivos SPM de una carpeta → tabla resumen   │
+│              CSV.                                                            │
+│ evaporation  Sensado de masa por evaporación: sigue f(t) → masa y tasa de    │
+│              evaporación.                                                    │
+│ figure       Exporta una figura de publicación (con scale bar y colormap     │
+│              científico).                                                    │
+│ convert      Convierte entre formatos (p.ej. .nid → .gwy para abrir en       │
+│              Gwyddion).                                                      │
+│ verify       Verifica la integridad y trazabilidad de un archivo .nid.       │
+│ gui          Lanza la GUI: **Fathom** por defecto, o la clásica con          │
+│              ``--legacy`` (requiere 'gui').                                  │
+│ workspace    Lanza el nuevo workspace de curvas de fuerza (rediseño;         │
+│              requiere 'gui').                                                │
+│ forcecurve   Ajusta una curva de fuerza (JPK/NanoSurf) y reporta el módulo,  │
+│              R², adhesión.                                                   │
+│ forcemap     Analiza un force-volume y muestra la estadística de los mapas   │
+│              de propiedades.                                                 │
+│ forcereport  Genera un informe magistral (HTML/LaTeX/PDF) de un              │
+│              force-volume.                                                   │
+│ forceexport  Exporta TODO (mapas CSV, tabla por curva, resumen e informe) a  │
+│              una carpeta.                                                    │
+│ fbatch       Procesa por lotes todas las curvas de fuerza de una carpeta →   │
+│              CSV resumen.                                                    │
+│ jkr          [EXPERIMENTAL] Ajuste JKR (contacto adhesivo) — módulo +        │
+│              trabajo de adhesión.                                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+

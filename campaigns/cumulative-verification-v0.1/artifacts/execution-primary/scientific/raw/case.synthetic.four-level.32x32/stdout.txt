@@ -1,0 +1,7 @@
+✓ Rugosidad → 
+artifacts/execution-primary/scientific/raw/case.synthetic.four-level.32x32/case.
+synthetic.four-level.32x32_roughness.csv
+· Sin canal CPD ('CPD'); se omite KPFM.
+✓ Manifiesto → 
+artifacts/execution-primary/scientific/raw/case.synthetic.four-level.32x32/case.
+synthetic.four-level.32x32_run_manifest.json

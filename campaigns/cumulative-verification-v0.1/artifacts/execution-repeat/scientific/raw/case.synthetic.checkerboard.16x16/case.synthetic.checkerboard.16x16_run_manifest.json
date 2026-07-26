@@ -1,0 +1,33 @@
+{
+  "input_file": "case.synthetic.checkerboard.16x16.npz",
+  "input_sha256": "e5dffadccd66e6efae010a5968813f3b15eb79f635017e29cdeb35bf520ec1db",
+  "input_bytes": 3382,
+  "command": "analyze",
+  "args": {
+    "channel": "Z-Axis",
+    "cpd_channel": "CPD",
+    "level": "none",
+    "tip_work_function": null
+  },
+  "channel": "Z-Axis",
+  "leveling_method": "none",
+  "units": "m",
+  "results_produced": [
+    "roughness"
+  ],
+  "warnings": [
+    "Sin canal CPD ('CPD'); se omite KPFM."
+  ],
+  "status": "OK",
+  "duration_seconds": 0.01879657500103349,
+  "schema_version": "1.0",
+  "spmkit_name": "SPM-Kit",
+  "spmkit_version": "0.1.5.dev0",
+  "git_commit": null,
+  "timestamp_utc": "2026-07-26T10:22:55.646495+00:00",
+  "environment": {
+    "python_version": "3.12.13",
+    "numpy_version": "2.5.1",
+    "platform": "Linux-7.1.4-arch1-1-x86_64-with-glibc2.43"
+  }
+}
