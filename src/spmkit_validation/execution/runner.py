@@ -181,7 +181,7 @@ def _artifact(
     generation_command: list[str] | None = None,
 ) -> dict[str, Any]:
     digest, size = _hash_file(path)
-    producer: dict[str, Any] = {"name": "spmkit-validation", "version": "0.1.2"}
+    producer: dict[str, Any] = {"name": "spmkit-validation", "version": "0.1.3"}
     if run_id is not None:
         producer["run_id"] = run_id
     document: dict[str, Any] = {

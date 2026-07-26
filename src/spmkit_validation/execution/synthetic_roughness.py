@@ -188,7 +188,7 @@ def _artifact(
         "source_artifact_ids": sources or [],
         "scientific_role": role,
         "contains_sensitive_data": False,
-        "limitations": ["Synthetic PHASE_01C artifact; contains no instrument data."],
+        "limitations": ["Synthetic protocol artifact; contains no instrument data."],
     }
 
 
@@ -296,6 +296,15 @@ def prepare_synthetic_roughness_campaign(
     generator_commit: str | None = None,
     sut_commit: str = DEFAULT_SUT_COMMIT,
     sut_version: str = DEFAULT_SUT_VERSION,
+    campaign_id: str = CAMPAIGN_ID,
+    campaign_title: str = "Deterministic synthetic Sa/Sq/Sz recovery",
+    campaign_objective: str = (
+        "Evaluate public black-box recovery of Sa, Sq and Sz on six small "
+        "analytical phantoms."
+    ),
+    environment_id: str = "environment.phase01c.authoritative",
+    responsible_party_name: str = "PHASE_01C protocol author",
+    write_bundle: bool = True,
 ) -> PreparedSyntheticCampaign:
     """Prepare and validate the six-case DRAFT without invoking SPM-Kit."""
 
@@ -421,7 +430,7 @@ def prepare_synthetic_roughness_campaign(
 
     ground_truth_document = {
         "ground_truth_version": "0.1.0",
-        "campaign_id": CAMPAIGN_ID,
+        "campaign_id": campaign_id,
         "derived_before_freeze": True,
         "uses_sut_outputs": False,
         "reference_classification": "ANALYTICAL_REFERENCE_NOT_THIRD_PARTY",
@@ -458,7 +467,7 @@ def prepare_synthetic_roughness_campaign(
 
     decisions = {
         "decision_version": "0.1.0",
-        "campaign_id": CAMPAIGN_ID,
+        "campaign_id": campaign_id,
         "generator_candidate": {
             "name": "spmkit-phantoms",
             "commit": "ab994cea1da484247a36c304be03da746fa059df",
@@ -545,12 +554,9 @@ def prepare_synthetic_roughness_campaign(
     bundle: dict[str, Any] = {
         "schema_version": "0.1.0",
         "campaign": {
-            "campaign_id": CAMPAIGN_ID,
-            "title": "Deterministic synthetic Sa/Sq/Sz recovery",
-            "objective": (
-                "Evaluate public black-box recovery of Sa, Sq and Sz on six small "
-                "analytical phantoms."
-            ),
+            "campaign_id": campaign_id,
+            "title": campaign_title,
+            "objective": campaign_objective,
             "protocol_version": PROTOCOL_VERSION,
             "status": "DRAFT",
             "created_at": created_at,
@@ -562,7 +568,7 @@ def prepare_synthetic_roughness_campaign(
                 "repository": "https://github.com/kegouro/spmkit.git",
                 "ref": "chore/workspace-sanitize",
                 "platform": "black-box-python-3.12",
-                "environment_id": "environment.phase01c.authoritative",
+                "environment_id": environment_id,
             },
             "intended_validation_level": "LEVEL 2 — NUMERICALLY_VERIFIED",
             "determinism_requirement": "NUMERICALLY_REPEATABLE",
@@ -574,7 +580,7 @@ def prepare_synthetic_roughness_campaign(
             "responsible_parties": [
                 {
                     "party_id": "party.protocol.author",
-                    "name": "PHASE_01C protocol author",
+                    "name": responsible_party_name,
                     "role": "protocol author and synthetic reference producer",
                 }
             ],
@@ -589,7 +595,8 @@ def prepare_synthetic_roughness_campaign(
     }
     assert_valid_bundle(bundle)
     bundle_path = root / "draft-bundle.json"
-    _write_exclusive(bundle_path, canonical_bundle_bytes(bundle))
+    if write_bundle:
+        _write_exclusive(bundle_path, canonical_bundle_bytes(bundle))
     return PreparedSyntheticCampaign(
         output_dir=root,
         bundle_path=bundle_path,

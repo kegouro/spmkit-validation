@@ -1,3 +1,3 @@
 """spmkit-validation: Arnés externo para pruebas deterministas."""
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"

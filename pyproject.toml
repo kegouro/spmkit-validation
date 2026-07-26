@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "spmkit-validation"
-version = "0.1.2"
+version = "0.1.3"
 description = "Arnés externo de validación para SPM-Kit"
 authors = [
     { name = "SPM-Kit contributors" },
