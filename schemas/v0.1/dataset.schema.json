@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:spmkit-validation:schema:v0.1:dataset",
+  "title": "Dataset v0.1",
+  "$defs": {
+    "dataset": {
+      "type": "object",
+      "required": [
+        "dataset_id",
+        "title",
+        "role",
+        "source_type",
+        "provenance",
+        "license",
+        "checksum",
+        "format",
+        "access_policy",
+        "public_metadata",
+        "limitations"
+      ],
+      "properties": {
+        "dataset_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "title": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "role": {
+          "enum": [
+            "DEVELOPMENT",
+            "VERIFICATION",
+            "CROSS_VALIDATION",
+            "PHYSICAL_REFERENCE",
+            "BLIND_HOLDOUT"
+          ]
+        },
+        "source_type": {
+          "enum": [
+            "SYNTHETIC",
+            "ANALYTICAL",
+            "PUBLIC_DATASET",
+            "CONTROLLED_ACQUISITION",
+            "PHYSICAL_ARTIFACT"
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["producer", "method", "created_at", "source_artifact_ids"],
+          "properties": {
+            "producer": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "method": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "created_at": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/timestamp"
+            },
+            "source_artifact_ids": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+            }
+          },
+          "additionalProperties": false
+        },
+        "license": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "checksum": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/sha256"
+        },
+        "format": {
+          "type": "object",
+          "required": ["media_type", "specification"],
+          "properties": {
+            "media_type": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+$"
+            },
+            "specification": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "access_policy": {
+          "type": "object",
+          "required": ["access_level", "access_state"],
+          "properties": {
+            "access_level": {
+              "enum": ["PUBLIC", "RESTRICTED", "CONTROLLED", "SEALED"]
+            },
+            "access_state": {
+              "enum": ["SEALED", "AUTHORIZED", "OPENED", "RETIRED"]
+            },
+            "authorization_reference": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+            }
+          },
+          "additionalProperties": false
+        },
+        "locator": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/relative_or_permitted_uri"
+        },
+        "sealed_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "public_metadata": {
+          "type": "object"
+        },
+        "limitations": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/limitations"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "BLIND_HOLDOUT"
+              }
+            },
+            "required": ["role"]
+          },
+          "then": {
+            "required": ["sealed_id"],
+            "properties": {
+              "access_policy": {
+                "properties": {
+                  "access_level": {
+                    "const": "SEALED"
+                  }
+                }
+              },
+              "public_metadata": {
+                "maxProperties": 0
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": ["sealed_id"]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "BLIND_HOLDOUT"
+              },
+              "access_policy": {
+                "properties": {
+                  "access_state": {
+                    "const": "SEALED"
+                  }
+                },
+                "required": ["access_state"]
+              }
+            },
+            "required": ["role", "access_policy"]
+          },
+          "then": {
+            "not": {
+              "required": ["locator"]
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

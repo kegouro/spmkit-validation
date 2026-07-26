@@ -1,0 +1,553 @@
+{
+  "schema_version": "0.1.0",
+  "campaign": {
+    "campaign_id": "campaign.synthetic.roughness.v0.1",
+    "title": "Illustrative zero-plane roughness recovery",
+    "objective": "Illustrate recovery of Sa, Sq, and Sz for an analytically flat synthetic phantom.",
+    "protocol_version": "0.1.0",
+    "status": "COMPLETED",
+    "created_at": "2026-01-01T00:00:00Z",
+    "frozen_at": "2026-01-02T00:00:00Z",
+    "system_under_test": {
+      "package_name": "spmkit",
+      "version": "0.1.5.dev0",
+      "git_commit": "11daf8879c9e3e098ce844778592525d4f2bdc53",
+      "repository": "https://github.com/kegouro/spmkit.git",
+      "ref": "chore/workspace-sanitize",
+      "platform": "synthetic-example-platform",
+      "environment_id": "environment.synthetic.01"
+    },
+    "intended_validation_level": "LEVEL 2 — NUMERICALLY_VERIFIED",
+    "determinism_requirement": "NUMERICALLY_REPEATABLE",
+    "limitations": [
+      "Illustrative contract example only; it is not evidence from a scientific campaign.",
+      "The analytical flat phantom exercises trivial zero-valued roughness measurands only."
+    ],
+    "responsible_parties": [
+      {
+        "party_id": "party.synthetic.author",
+        "name": "Synthetic example author",
+        "role": "protocol author"
+      }
+    ]
+  },
+  "datasets": [
+    {
+      "dataset_id": "dataset.synthetic.flat-plane",
+      "title": "Analytically flat synthetic phantom",
+      "role": "VERIFICATION",
+      "source_type": "SYNTHETIC",
+      "provenance": {
+        "producer": "Analytical fixture generator",
+        "method": "Declare a constant zero-valued height field without instrument data.",
+        "created_at": "2026-01-01T01:00:00Z",
+        "source_artifact_ids": [
+          "artifact.synthetic.input"
+        ]
+      },
+      "license": "CC0-1.0",
+      "checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "format": {
+        "media_type": "application/json",
+        "specification": "Synthetic scalar fixture descriptor v1"
+      },
+      "access_policy": {
+        "access_level": "PUBLIC",
+        "access_state": "OPENED"
+      },
+      "locator": "artifacts/synthetic/flat-plane.json",
+      "public_metadata": {
+        "synthetic": true,
+        "physical_measurements": false
+      },
+      "limitations": [
+        "Contains no instrument acquisition and no nonzero surface structure."
+      ]
+    }
+  ],
+  "references": [
+    {
+      "reference_id": "reference.analytical.zero-roughness",
+      "reference_type": "ANALYTICAL_REFERENCE",
+      "name": "Constant-plane analytical roughness",
+      "version": "1",
+      "producer": {
+        "name": "Synthetic example author",
+        "is_third_party": false,
+        "operator_ids": [
+          "party.synthetic.author"
+        ]
+      },
+      "method": "For z(x,y)=0, Sa=0, Sq=0, and Sz=max(z)-min(z)=0 by definition.",
+      "independence_justification": {
+        "rationale": "The values follow directly from the definitions, but the reference is not claimed as third-party independent.",
+        "shared_algorithms": [],
+        "shared_formulas": [
+          "ISO-style definitions of Sa, Sq, and Sz"
+        ],
+        "shared_libraries": [],
+        "shared_datasets": [
+          "dataset.synthetic.flat-plane"
+        ],
+        "shared_authors": [
+          "Synthetic example author"
+        ],
+        "circularity_risks": [
+          "The fixture author also wrote the analytical statement."
+        ],
+        "independence_assessment": "NOT_INDEPENDENT"
+      },
+      "shared_dependencies": {
+        "software": [],
+        "data": [
+          "dataset.synthetic.flat-plane"
+        ],
+        "methods": [
+          "Definitions of Sa, Sq, and Sz"
+        ],
+        "notes": [
+          "No numerical reference implementation is used."
+        ]
+      },
+      "known_limitations": [
+        "Only the trivial constant-plane case is represented."
+      ],
+      "evidence_ids": [
+        "artifact.reference.values"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "case.synthetic.roughness",
+      "dataset_id": "dataset.synthetic.flat-plane",
+      "reference_id": "reference.analytical.zero-roughness",
+      "purpose": "VERIFICATION",
+      "operation": {
+        "name": "roughness",
+        "version": "public-cli-v1",
+        "parameters": {
+          "leveling": "none"
+        }
+      },
+      "input_selector": {
+        "selector_type": "FULL_DATASET"
+      },
+      "preprocessing": [],
+      "measurands": [
+        {
+          "measurand_id": "Sa",
+          "canonical_unit": "nm",
+          "physical_quantity": "arithmetical mean height deviation",
+          "description": "Mean absolute deviation of height from the mean plane."
+        },
+        {
+          "measurand_id": "Sq",
+          "canonical_unit": "nm",
+          "physical_quantity": "root mean square height",
+          "description": "Root mean square deviation of height from the mean plane."
+        },
+        {
+          "measurand_id": "Sz",
+          "canonical_unit": "nm",
+          "physical_quantity": "maximum surface height",
+          "description": "Difference between maximum and minimum height."
+        }
+      ],
+      "tolerances": [
+        {
+          "tolerance_id": "tolerance.Sa.exact-zero",
+          "measurand_id": "Sa",
+          "type": "ABSOLUTE",
+          "absolute": 0.0,
+          "unit": "nm",
+          "justification": "The illustrative phantom and reference are exactly zero by construction.",
+          "source": "Predeclared analytical identity for this synthetic fixture"
+        },
+        {
+          "tolerance_id": "tolerance.Sq.exact-zero",
+          "measurand_id": "Sq",
+          "type": "ABSOLUTE",
+          "absolute": 0.0,
+          "unit": "nm",
+          "justification": "The illustrative phantom and reference are exactly zero by construction.",
+          "source": "Predeclared analytical identity for this synthetic fixture"
+        },
+        {
+          "tolerance_id": "tolerance.Sz.exact-zero",
+          "measurand_id": "Sz",
+          "type": "ABSOLUTE",
+          "absolute": 0.0,
+          "unit": "nm",
+          "justification": "The illustrative phantom and reference are exactly zero by construction.",
+          "source": "Predeclared analytical identity for this synthetic fixture"
+        }
+      ],
+      "expected_units": {
+        "Sa": "nm",
+        "Sq": "nm",
+        "Sz": "nm"
+      },
+      "acceptance_policy": {
+        "aggregation": "ALL_MEASURANDS_MUST_PASS",
+        "on_evaluation_error": "ERROR",
+        "on_missing_result": "NOT_EVALUATED"
+      },
+      "predeclared_at": "2026-01-01T12:00:00Z",
+      "case_status": "ACTIVE"
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "run.synthetic.software-test",
+      "campaign_id": "campaign.synthetic.roughness.v0.1",
+      "case_ids": [
+        "case.synthetic.roughness"
+      ],
+      "run_type": "SOFTWARE_TEST",
+      "started_at": "2026-01-03T00:00:00Z",
+      "finished_at": "2026-01-03T00:00:01Z",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/synthetic_contract_test.py"
+      ],
+      "parameters": {
+        "fixture_kind": "synthetic"
+      },
+      "seed": null,
+      "environment": {
+        "environment_id": "environment.synthetic.01",
+        "platform": "synthetic-example-platform",
+        "operating_system": "illustrative-os",
+        "architecture": "illustrative-arch",
+        "python_version": "3.12"
+      },
+      "input_artifact_ids": [
+        "artifact.synthetic.input"
+      ],
+      "output_artifact_ids": [
+        "artifact.software-test",
+        "artifact.manifest.software-test"
+      ],
+      "run_manifest_artifact_id": "artifact.manifest.software-test",
+      "execution_status": "COMPLETED",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "run.synthetic.validation",
+      "campaign_id": "campaign.synthetic.roughness.v0.1",
+      "case_ids": [
+        "case.synthetic.roughness"
+      ],
+      "run_type": "VALIDATION",
+      "started_at": "2026-01-03T01:00:00Z",
+      "finished_at": "2026-01-03T01:00:01Z",
+      "command": [
+        "spmkit",
+        "analyze",
+        "artifacts/synthetic/flat-plane.json"
+      ],
+      "parameters": {
+        "operation": "roughness",
+        "leveling": "none"
+      },
+      "seed": 20260103,
+      "environment": {
+        "environment_id": "environment.synthetic.01",
+        "platform": "synthetic-example-platform",
+        "operating_system": "illustrative-os",
+        "architecture": "illustrative-arch",
+        "python_version": "3.12"
+      },
+      "input_artifact_ids": [
+        "artifact.synthetic.input"
+      ],
+      "output_artifact_ids": [
+        "artifact.quantitative-results",
+        "artifact.manifest.validation"
+      ],
+      "run_manifest_artifact_id": "artifact.manifest.validation",
+      "execution_status": "COMPLETED",
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison_id": "comparison.synthetic.Sa",
+      "case_id": "case.synthetic.roughness",
+      "run_id": "run.synthetic.validation",
+      "measurand_id": "Sa",
+      "observed": 0.0,
+      "reference": 0.0,
+      "difference": 0.0,
+      "absolute_error": 0.0,
+      "relative_error": null,
+      "normalized_error": null,
+      "tolerance_used": "tolerance.Sa.exact-zero",
+      "evaluation_status": "EVALUATED",
+      "outcome": "PASS",
+      "evidence_ids": [
+        "artifact.quantitative-results",
+        "artifact.reference.values"
+      ],
+      "notes": [
+        "Trivial analytical zero; not a cross-validation result."
+      ]
+    },
+    {
+      "comparison_id": "comparison.synthetic.Sq",
+      "case_id": "case.synthetic.roughness",
+      "run_id": "run.synthetic.validation",
+      "measurand_id": "Sq",
+      "observed": 0.0,
+      "reference": 0.0,
+      "difference": 0.0,
+      "absolute_error": 0.0,
+      "relative_error": null,
+      "normalized_error": null,
+      "tolerance_used": "tolerance.Sq.exact-zero",
+      "evaluation_status": "EVALUATED",
+      "outcome": "PASS",
+      "evidence_ids": [
+        "artifact.quantitative-results",
+        "artifact.reference.values"
+      ],
+      "notes": [
+        "Trivial analytical zero; not a cross-validation result."
+      ]
+    },
+    {
+      "comparison_id": "comparison.synthetic.Sz",
+      "case_id": "case.synthetic.roughness",
+      "run_id": "run.synthetic.validation",
+      "measurand_id": "Sz",
+      "observed": 0.0,
+      "reference": 0.0,
+      "difference": 0.0,
+      "absolute_error": 0.0,
+      "relative_error": null,
+      "normalized_error": null,
+      "tolerance_used": "tolerance.Sz.exact-zero",
+      "evaluation_status": "EVALUATED",
+      "outcome": "PASS",
+      "evidence_ids": [
+        "artifact.quantitative-results",
+        "artifact.reference.values"
+      ],
+      "notes": [
+        "Trivial analytical zero; not a cross-validation result."
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "artifact_id": "artifact.synthetic.input",
+      "artifact_type": "INPUT",
+      "media_type": "application/json",
+      "relative_uri": "artifacts/synthetic/flat-plane.json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "size_bytes": 128,
+      "created_at": "2026-01-01T01:00:00Z",
+      "producer": {
+        "name": "Analytical fixture generator",
+        "version": "1"
+      },
+      "regenerable": true,
+      "generation_command": [
+        "python",
+        "tools/generate_zero_plane.py"
+      ],
+      "source_artifact_ids": [],
+      "scientific_role": "INPUT_DATA",
+      "contains_sensitive_data": false,
+      "limitations": [
+        "Illustrative descriptor; no physical acquisition."
+      ]
+    },
+    {
+      "artifact_id": "artifact.reference.values",
+      "artifact_type": "REFERENCE_EXPORT",
+      "media_type": "application/json",
+      "relative_uri": "artifacts/reference/zero-roughness.json",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "size_bytes": 64,
+      "created_at": "2026-01-01T02:00:00Z",
+      "producer": {
+        "name": "Analytical reference writer",
+        "version": "1"
+      },
+      "regenerable": true,
+      "generation_command": [
+        "python",
+        "tools/write_zero_reference.py"
+      ],
+      "source_artifact_ids": [],
+      "scientific_role": "REFERENCE_VALUE",
+      "contains_sensitive_data": false,
+      "limitations": [
+        "Contains only the analytical values zero for Sa, Sq, and Sz."
+      ]
+    },
+    {
+      "artifact_id": "artifact.software-test",
+      "artifact_type": "REPORT",
+      "media_type": "application/json",
+      "relative_uri": "artifacts/tests/software-test.json",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "size_bytes": 96,
+      "created_at": "2026-01-03T00:00:01Z",
+      "producer": {
+        "name": "pytest",
+        "version": "illustrative",
+        "run_id": "run.synthetic.software-test"
+      },
+      "regenerable": true,
+      "generation_command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/synthetic_contract_test.py"
+      ],
+      "source_artifact_ids": [
+        "artifact.synthetic.input"
+      ],
+      "scientific_role": "SOFTWARE_TEST_RESULT",
+      "contains_sensitive_data": false,
+      "limitations": [
+        "Illustrative software-test record only."
+      ]
+    },
+    {
+      "artifact_id": "artifact.manifest.software-test",
+      "artifact_type": "MANIFEST",
+      "media_type": "application/json",
+      "relative_uri": "artifacts/manifests/software-test-run.json",
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "size_bytes": 512,
+      "created_at": "2026-01-03T00:00:01Z",
+      "producer": {
+        "name": "spmkit.core.export.RunManifest",
+        "version": "1.0",
+        "run_id": "run.synthetic.software-test"
+      },
+      "regenerable": true,
+      "generation_command": [
+        "spmkit",
+        "emit-run-manifest"
+      ],
+      "source_artifact_ids": [
+        "artifact.synthetic.input"
+      ],
+      "scientific_role": "PROVENANCE",
+      "contains_sensitive_data": false,
+      "external_schema": {
+        "name": "spmkit.core.export.RunManifest",
+        "version": "1.0"
+      },
+      "limitations": [
+        "The external manifest content is not duplicated in this bundle."
+      ]
+    },
+    {
+      "artifact_id": "artifact.quantitative-results",
+      "artifact_type": "TABLE",
+      "media_type": "application/json",
+      "relative_uri": "artifacts/results/roughness.json",
+      "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "size_bytes": 128,
+      "created_at": "2026-01-03T01:00:01Z",
+      "producer": {
+        "name": "spmkit",
+        "version": "0.1.5.dev0",
+        "run_id": "run.synthetic.validation"
+      },
+      "regenerable": true,
+      "generation_command": [
+        "spmkit",
+        "analyze",
+        "artifacts/synthetic/flat-plane.json"
+      ],
+      "source_artifact_ids": [
+        "artifact.synthetic.input"
+      ],
+      "scientific_role": "QUANTITATIVE_RESULT",
+      "contains_sensitive_data": false,
+      "limitations": [
+        "Illustrative zero results, not observations from a real execution."
+      ]
+    },
+    {
+      "artifact_id": "artifact.manifest.validation",
+      "artifact_type": "MANIFEST",
+      "media_type": "application/json",
+      "relative_uri": "artifacts/manifests/validation-run.json",
+      "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "size_bytes": 512,
+      "created_at": "2026-01-03T01:00:01Z",
+      "producer": {
+        "name": "spmkit.core.export.RunManifest",
+        "version": "1.0",
+        "run_id": "run.synthetic.validation"
+      },
+      "regenerable": true,
+      "generation_command": [
+        "spmkit",
+        "analyze",
+        "artifacts/synthetic/flat-plane.json"
+      ],
+      "source_artifact_ids": [
+        "artifact.synthetic.input"
+      ],
+      "scientific_role": "PROVENANCE",
+      "contains_sensitive_data": false,
+      "external_schema": {
+        "name": "spmkit.core.export.RunManifest",
+        "version": "1.0"
+      },
+      "limitations": [
+        "The external manifest content is not duplicated in this bundle."
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim.synthetic.roughness.level2",
+      "claim_text": "The illustrative zero-plane example recovers Sa, Sq, and Sz within its predeclared analytical tolerances.",
+      "level": "LEVEL 2 — NUMERICALLY_VERIFIED",
+      "scope": {
+        "description": "Only the constant zero-valued synthetic phantom and three scalar roughness measurands.",
+        "measurands": [
+          "Sa",
+          "Sq",
+          "Sz"
+        ],
+        "dataset_roles": [
+          "VERIFICATION"
+        ],
+        "reproducibility_dimensions": []
+      },
+      "supported_case_ids": [
+        "case.synthetic.roughness"
+      ],
+      "supported_comparison_ids": [
+        "comparison.synthetic.Sa",
+        "comparison.synthetic.Sq",
+        "comparison.synthetic.Sz"
+      ],
+      "supported_evidence_ids": [
+        "artifact.software-test",
+        "artifact.reference.values",
+        "artifact.quantitative-results"
+      ],
+      "limitations": [
+        "This is an illustrative synthetic contract instance, not campaign evidence.",
+        "No independent software, physical reference, instrument, or laboratory is represented."
+      ],
+      "status": "SUPPORTED"
+    }
+  ]
+}

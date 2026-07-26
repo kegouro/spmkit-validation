@@ -12,6 +12,7 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "jsonschema>=4.18,<5",
     "pyyaml",
     "pytest>=7.0",
     "matplotlib>=3.7",
@@ -20,3 +21,33 @@ dependencies = [
 [project.scripts]
 spmkit-validation = "spmkit_validation.cli:main"
 spmkit-validation-classify = "spmkit_validation.dataset_classifier:main"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spmkit_validation"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"schemas/v0.1" = "spmkit_validation/_schema_resources/v0.1"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/schemas",
+    "/tests",
+    "/examples",
+    "/docs",
+    "/README.md",
+    "/SCHEMA_CHANGELOG.md",
+]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
