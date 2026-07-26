@@ -1,0 +1,7 @@
+✓ Rugosidad → 
+artifacts/execution-primary/raw/case.synthetic.flat.16x16/case.synthetic.flat.16
+x16_roughness.csv
+· Sin canal CPD ('CPD'); se omite KPFM.
+✓ Manifiesto → 
+artifacts/execution-primary/raw/case.synthetic.flat.16x16/case.synthetic.flat.16
+x16_run_manifest.json
