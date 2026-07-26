@@ -1,4 +1,4 @@
-.PHONY: help test check phase01b-gates phase01c-gates smoke full-campaign report clean
+.PHONY: help test check phase01b-gates phase01c-gates phase01d-gates smoke full-campaign report clean
 
 PYTHON ?= python
 SPMKIT_BIN ?=
@@ -8,6 +8,7 @@ help:
 	@echo "  make check          - Ejecuta pytest"
 	@echo "  make phase01b-gates - Reproduce todos los gates no científicos de PHASE_01B"
 	@echo "  make phase01c-gates - Reproduce la campaña sintética gobernada de PHASE_01C"
+	@echo "  make phase01d-gates - Reproduce la verificación acumulativa de PHASE_01D"
 	@echo "  make smoke          - Ejecuta la campaña sintética rápida (CI)"
 	@echo "  make full-campaign  - Ejecuta la campaña completa (Requiere SPM-Kit bin local)"
 	@echo "  make report         - Genera el reporte de una campaña"
@@ -21,6 +22,9 @@ phase01b-gates:
 
 phase01c-gates:
 	bash scripts/run_phase01c_gates.sh
+
+phase01d-gates:
+	bash scripts/run_phase01d_gates.sh
 
 smoke:
 	@echo "Ejecutando Smoke Campaign..."
