@@ -177,6 +177,8 @@ def _artifact(
     run_id: str | None = None,
     sources: list[str] | None = None,
     external_schema: dict[str, str] | None = None,
+    regenerable: bool = True,
+    generation_command: list[str] | None = None,
 ) -> dict[str, Any]:
     digest, size = _hash_file(path)
     producer: dict[str, Any] = {"name": "spmkit-validation", "version": "0.1.2"}
@@ -191,8 +193,10 @@ def _artifact(
         "size_bytes": size,
         "created_at": created_at,
         "producer": producer,
-        "regenerable": True,
-        "generation_command": ["spmkit", "analyze"],
+        "regenerable": regenerable,
+        "generation_command": generation_command
+        if generation_command is not None
+        else ["spmkit", "analyze"],
         "source_artifact_ids": sources or [],
         "scientific_role": role,
         "contains_sensitive_data": False,
@@ -323,6 +327,15 @@ def _scientific_environment(executable: Path) -> dict[str, str]:
     }
 
 
+def _copy_exclusive(source: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with source.open("rb") as source_handle, destination.open("xb") as target_handle:
+        while chunk := source_handle.read(1024 * 1024):
+            target_handle.write(chunk)
+        target_handle.flush()
+        os.fsync(target_handle.fileno())
+
+
 def _output_values(document: Mapping[str, Any]) -> dict[str, float]:
     values: dict[str, float] = {}
     for measurand in MEASURANDS:
@@ -423,6 +436,8 @@ def execute_frozen_campaign(
         )
 
     started_at = _now()
+    wheel_copy = output_resolved / "sut-wheel.whl"
+    _copy_exclusive(wheel, wheel_copy)
     environment_document = {
         "environment_version": "0.1.0",
         "python_requirement": "3.12",
@@ -443,6 +458,17 @@ def execute_frozen_campaign(
     _write_exclusive(help_path, help_result.stdout.encode("utf-8"))
     evidence: list[dict[str, Any]] = [
         _artifact(
+            wheel_copy,
+            root,
+            artifact_id="artifact.execution.sut-wheel",
+            artifact_type="INPUT",
+            media_type="application/octet-stream",
+            created_at=started_at,
+            role="PROVENANCE",
+            regenerable=False,
+            generation_command=[],
+        ),
+        _artifact(
             environment_path,
             root,
             artifact_id="artifact.execution.environment",
@@ -450,6 +476,8 @@ def execute_frozen_campaign(
             media_type="application/json",
             created_at=started_at,
             role="PROVENANCE",
+            sources=["artifact.execution.sut-wheel"],
+            generation_command=["spmkit-validation", "campaign", "execute"],
         ),
         _artifact(
             help_path,
@@ -459,6 +487,8 @@ def execute_frozen_campaign(
             media_type="text/plain",
             created_at=started_at,
             role="PROVENANCE",
+            sources=["artifact.execution.sut-wheel"],
+            generation_command=["spmkit", "--help"],
         ),
     ]
     input_artifacts = {
