@@ -10,13 +10,18 @@ import platform
 import shutil
 import stat
 import subprocess
-from collections.abc import Mapping
+import sys
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from spmkit_validation.lifecycle import canonical_bundle_bytes, verify_frozen_snapshot
+from spmkit_validation.lifecycle import (
+    LifecycleError,
+    canonical_bundle_bytes,
+    verify_frozen_snapshot,
+)
 from spmkit_validation.schemas import load_validation_bundle
 
 from .ground_truth import MEASURANDS
@@ -53,6 +58,18 @@ class CampaignExecutionResult:
                 case_id: dict(values) for case_id, values in self.observations.items()
             },
         }
+
+
+@dataclass(frozen=True, slots=True)
+class InstalledSUTEnvironment:
+    """One clean installed-wheel environment reusable by governed subprocesses."""
+
+    executable: Path
+    python_executable: Path
+    wheel_sha256: str
+    wheel_size_bytes: int
+    installation: str
+    installed_dependencies: tuple[str, ...]
 
 
 def _now() -> str:
@@ -179,6 +196,7 @@ def _artifact(
     external_schema: dict[str, str] | None = None,
     regenerable: bool = True,
     generation_command: list[str] | None = None,
+    limitations: list[str] | None = None,
 ) -> dict[str, Any]:
     digest, size = _hash_file(path)
     producer: dict[str, Any] = {"name": "spmkit-validation", "version": "0.1.3"}
@@ -200,9 +218,9 @@ def _artifact(
         "source_artifact_ids": sources or [],
         "scientific_role": role,
         "contains_sensitive_data": False,
-        "limitations": [
-            "Black-box synthetic execution artifact; no producer authenticity is asserted."
-        ],
+        "limitations": limitations
+        if limitations is not None
+        else ["Black-box synthetic execution artifact; no producer authenticity is asserted."],
     }
     if external_schema is not None:
         document["external_schema"] = external_schema
@@ -214,9 +232,21 @@ def _validate_protocol_before_subprocess(
     freeze_receipt_path: Path,
     artifact_root: Path,
 ) -> dict[str, Any]:
-    verification = verify_frozen_snapshot(
-        protocol_bundle_path, freeze_receipt_path, artifact_root=artifact_root
-    )
+    try:
+        verification = verify_frozen_snapshot(
+            protocol_bundle_path, freeze_receipt_path, artifact_root=artifact_root
+        )
+    except LifecycleError as exc:
+        raise CampaignExecutionError(
+            [
+                execution_issue(
+                    CampaignExecutionIssueCategory.PROTOCOL,
+                    "EXECUTION.PROTOCOL_NOT_VERIFIED",
+                    "",
+                    "; ".join(issue.description for issue in exc.issues),
+                )
+            ]
+        ) from exc
     if verification.status != "SNAPSHOT_VALID" or verification.artifact_status != "PASS":
         raise CampaignExecutionError(
             [
@@ -246,17 +276,17 @@ def _validate_protocol_before_subprocess(
     return bundle
 
 
-def _prepare_sut_executable(
+def install_sut_wheel_environment(
     wheel: Path,
     output_dir: Path,
-    override: str | Path | None,
     sut_version: str,
-) -> tuple[Path, str, tuple[str, ...]]:
-    if override is not None:
-        executable = _safe_regular_file(
-            Path(override), "EXECUTION.INVALID_SUT_EXECUTABLE", "/sut_executable"
-        )
-        return executable, "test-override", ("fake-executable-test-override",)
+    *,
+    test_dependencies: Sequence[str] = (),
+) -> InstalledSUTEnvironment:
+    """Install one declared wheel and exact test dependencies into Python 3.12."""
+
+    wheel = _safe_regular_file(wheel, "EXECUTION.INVALID_WHEEL", "/sut_wheel")
+    wheel_sha256, wheel_size = _hash_file(wheel)
     uv = shutil.which("uv")
     if uv is None:
         raise CampaignExecutionError(
@@ -296,6 +326,7 @@ def _prepare_sut_executable(
             "--python",
             str(venv / "bin" / "python"),
             str(wheel),
+            *test_dependencies,
         ],
         check=False,
         capture_output=True,
@@ -339,7 +370,38 @@ def _prepare_sut_executable(
             continue
         name = value.partition(" @ ")[0]
         dependencies.append(f"spmkit=={sut_version}" if name == "spmkit" else value)
-    return executable, "wheel-clean-venv", tuple(sorted(dependencies))
+    return InstalledSUTEnvironment(
+        executable=executable,
+        python_executable=_safe_regular_file(
+            venv / "bin" / "python", "EXECUTION.PYTHON_NOT_INSTALLED", "/sut_wheel"
+        ),
+        wheel_sha256=wheel_sha256,
+        wheel_size_bytes=wheel_size,
+        installation="wheel-clean-venv",
+        installed_dependencies=tuple(sorted(dependencies)),
+    )
+
+
+def _prepare_sut_environment(
+    wheel: Path,
+    output_dir: Path,
+    override: str | Path | None,
+    sut_version: str,
+) -> InstalledSUTEnvironment:
+    wheel_sha256, wheel_size = _hash_file(wheel)
+    if override is not None:
+        executable = _safe_regular_file(
+            Path(override), "EXECUTION.INVALID_SUT_EXECUTABLE", "/sut_executable"
+        )
+        return InstalledSUTEnvironment(
+            executable=executable,
+            python_executable=Path(sys.executable).resolve(strict=True),
+            wheel_sha256=wheel_sha256,
+            wheel_size_bytes=wheel_size,
+            installation="test-override",
+            installed_dependencies=("fake-executable-test-override",),
+        )
+    return install_sut_wheel_environment(wheel, output_dir, sut_version)
 
 
 def _scientific_environment(executable: Path) -> dict[str, str]:
@@ -413,6 +475,7 @@ def execute_frozen_campaign(
     sut_wheel: str | Path,
     output_dir: str | Path,
     sut_executable: str | Path | None = None,
+    installed_environment: InstalledSUTEnvironment | None = None,
     timeout_seconds: float = 60.0,
 ) -> CampaignExecutionResult:
     """Verify-before-run, then execute exactly six protocol cases sequentially."""
@@ -441,8 +504,38 @@ def execute_frozen_campaign(
         ) from exc
 
     sut_version = protocol["campaign"]["system_under_test"]["version"]
-    executable, environment_kind, installed_dependencies = _prepare_sut_executable(
+    if installed_environment is not None and sut_executable is not None:
+        raise CampaignExecutionError(
+            [
+                execution_issue(
+                    CampaignExecutionIssueCategory.INPUT,
+                    "EXECUTION.AMBIGUOUS_ENVIRONMENT",
+                    "/installed_environment",
+                    "installed_environment and sut_executable cannot both be supplied",
+                )
+            ]
+        )
+    sut_environment = installed_environment or _prepare_sut_environment(
         wheel, output_resolved, sut_executable, sut_version
+    )
+    if (
+        sut_environment.wheel_sha256 != wheel_sha256
+        or sut_environment.wheel_size_bytes != wheel_size
+    ):
+        raise CampaignExecutionError(
+            [
+                execution_issue(
+                    CampaignExecutionIssueCategory.INPUT,
+                    "EXECUTION.WHEEL_IDENTITY_MISMATCH",
+                    "/sut_wheel",
+                    "installed environment does not match the declared wheel bytes",
+                )
+            ]
+        )
+    executable = _safe_regular_file(
+        sut_environment.executable,
+        "EXECUTION.SPMKIT_NOT_INSTALLED",
+        "/installed_environment/executable",
     )
     environment = _scientific_environment(executable)
     help_result = subprocess.run(
@@ -475,13 +568,13 @@ def execute_frozen_campaign(
         "architecture": platform.machine(),
         "locale": "C.UTF-8",
         "network_policy": "OFFLINE",
-        "installation": environment_kind,
+        "installation": sut_environment.installation,
         "wheel_sha256": wheel_sha256,
         "wheel_size_bytes": wheel_size,
         "sut_package_version": sut_version,
         "sut_commit": protocol["campaign"]["system_under_test"]["git_commit"],
         "command_contract": ["spmkit", "analyze", "--channel", "Z-Axis", "--level", "none"],
-        "installed_dependencies": list(installed_dependencies),
+        "installed_dependencies": list(sut_environment.installed_dependencies),
     }
     environment_path = output_resolved / "environment.json"
     _write_exclusive(environment_path, canonical_bundle_bytes(environment_document))
@@ -528,7 +621,10 @@ def execute_frozen_campaign(
     datasets = {dataset["dataset_id"]: dataset for dataset in protocol["datasets"]}
     runs: list[dict[str, Any]] = []
     observations: dict[str, Mapping[str, float]] = {}
-    for case in protocol["cases"]:
+    scientific_cases = [
+        case for case in protocol["cases"] if case["operation"]["name"] == "spmkit analyze"
+    ]
+    for case in scientific_cases:
         case_id = case["case_id"]
         dataset = datasets[case["dataset_id"]]
         input_id = next(
@@ -721,7 +817,9 @@ def execute_frozen_campaign(
                 },
                 "seed": None,
                 "environment": {
-                    "environment_id": "environment.phase01c.authoritative",
+                    "environment_id": protocol["campaign"]["system_under_test"][
+                        "environment_id"
+                    ],
                     "platform": platform.system().lower(),
                     "operating_system": platform.system(),
                     "architecture": platform.machine(),

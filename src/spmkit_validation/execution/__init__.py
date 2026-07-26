@@ -17,7 +17,19 @@ from .population import (
     populate_result_bundle,
 )
 from .receipt import ExecutionReceipt, write_execution_receipt
-from .runner import CampaignExecutionResult, execute_frozen_campaign
+from .runner import (
+    CampaignExecutionResult,
+    InstalledSUTEnvironment,
+    execute_frozen_campaign,
+    install_sut_wheel_environment,
+)
+from .software_verification import (
+    JUnitSummary,
+    SoftwareTestExecutionResult,
+    execute_software_test,
+    parse_junit_xml,
+    validate_import_probe,
+)
 from .synthetic_roughness import (
     CAMPAIGN_ID,
     CASE_SPECS,
@@ -37,23 +49,30 @@ __all__ = [
     "CampaignExecutionIssue",
     "CampaignExecutionResult",
     "ExecutionReceipt",
+    "InstalledSUTEnvironment",
+    "JUnitSummary",
     "PreparedSyntheticCampaign",
     "PreparedCumulativeCampaign",
     "SOFTWARE_CASE_ID",
     "SOFTWARE_TEST_RUN_ID",
+    "SoftwareTestExecutionResult",
     "analytical_roughness",
     "compare_campaign_repetition",
     "derive_tolerance_budget",
     "deterministic_npz_bytes",
     "discrete_roughness",
     "execute_frozen_campaign",
+    "execute_software_test",
     "export_software_test_suite",
     "normalized_scientific_record",
+    "install_sut_wheel_environment",
+    "parse_junit_xml",
     "populate_result_bundle",
     "prepare_synthetic_roughness_campaign",
     "prepare_cumulative_verification_campaign",
     "surface_array",
     "verify_protocol_continuity",
     "verify_result_snapshot",
+    "validate_import_probe",
     "write_execution_receipt",
 ]
