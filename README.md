@@ -21,6 +21,25 @@ El contrato normativo sigue siendo `ValidationBundle 0.1.0`. Consulte
 limitaciones, política de paths y exit codes. El gate completo no científico se
 reproduce con `make phase01b-gates`.
 
+## Synthetic campaign workflow
+
+El paquete `0.1.2` ejecuta seis phantoms sintéticos congelados previamente,
+siempre mediante el ejecutable instalado desde un wheel del SUT:
+
+```bash
+spmkit-validation campaign prepare-synthetic-roughness --output-dir CAMPAIGN
+spmkit-validation bundle freeze CAMPAIGN/draft-bundle.json \
+  --artifact-root CAMPAIGN --output-dir CAMPAIGN/protocol-snapshot
+spmkit-validation campaign execute PROTOCOL/bundle.json PROTOCOL/freeze-receipt.json \
+  --artifact-root CAMPAIGN --sut-wheel SPMKIT.whl --output-dir CAMPAIGN/execution
+spmkit-validation campaign verify-result RESULT/result-bundle.json \
+  RESULT/execution-receipt.json --protocol-bundle PROTOCOL/bundle.json \
+  --protocol-receipt PROTOCOL/freeze-receipt.json --artifact-root CAMPAIGN
+```
+
+`make phase01c-gates` reproduce el flujo completo, incluida la repetición y
+las pruebas de tampering. No usa datos instrumentales ni declara LEVEL 3+.
+
 ## Ejecución Local
 
 El framework está automatizado usando `Make` y requiere que tanto `spmkit` como `spmkit-phantoms` residan en el mismo nivel de directorios:

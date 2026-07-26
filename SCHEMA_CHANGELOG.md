@@ -5,6 +5,20 @@ paquete y `schema_version` son conceptos relacionados pero distintos: un cambio
 de implementación compatible puede incrementar el paquete sin cambiar el
 lenguaje JSON aceptado.
 
+## Package 0.1.2 / execution receipt 0.1.0 — 2026-07-26
+
+Cambio operacional compatible; `schema_version = "0.1.0"` y los nueve schemas
+normativos permanecen sin cambios:
+
+- protocolo determinista de seis casos sintéticos para Sa, Sq y Sz;
+- ground truth analítico y self-check discreto anteriores al freeze;
+- tolerancias derivadas sin outputs del SUT;
+- ejecución secuencial black-box desde wheel con JSON público;
+- continuidad de protocolo, comparisons derivadas y errores preservados;
+- `TAMPER_EVIDENT_RESULT_SNAPSHOT` y execution receipt `0.1.0`;
+- repetición `NUMERICALLY_REPEATABLE` sin elevarla a LEVEL 5;
+- API y CLI `campaign`.
+
 ## Package 0.1.1 / lifecycle receipt 0.1.0 — 2026-07-26
 
 Cambio operacional compatible, sin cambios en los nueve schemas normativos ni
