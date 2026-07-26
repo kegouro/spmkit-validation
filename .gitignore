@@ -4,5 +4,6 @@ __pycache__/
 .pytest_cache/
 *.stdout
 *.stderr
+sut-venv/
 
 results/
