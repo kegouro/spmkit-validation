@@ -1,8 +1,11 @@
 import json
-import numpy as np
 from pathlib import Path
-from spmkit_validation.models import ValidationCase, Status
+
+import numpy as np
+
 from spmkit_validation.adapters.gwyddion.runner import run_gwyddion_manual
+from spmkit_validation.models import Status, ValidationCase
+
 
 def test_run_gwyddion_manual_inconclusive(tmp_path: Path):
     # Crear un input fake

@@ -3,13 +3,14 @@
 import datetime
 import json
 from pathlib import Path
-from typing import Optional
 
-from spmkit_validation.models import RunRecord, Status, ValidationCase
 from spmkit_validation.adapters.gwyddion.export_asc import export_npz_to_asc
+from spmkit_validation.models import RunRecord, Status, ValidationCase
 
 
-def run_gwyddion_manual(case: ValidationCase, output_dir: Path, npz_input_path: Path) -> tuple[RunRecord, Optional[dict]]:
+def run_gwyddion_manual(
+    case: ValidationCase, output_dir: Path, npz_input_path: Path
+) -> tuple[RunRecord, dict | None]:
     """Ejecuta el protocolo manual para Gwyddion.
     
     Genera el archivo .asc si no existe y busca el JSON de resultados.

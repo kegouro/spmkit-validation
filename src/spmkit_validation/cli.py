@@ -2,6 +2,7 @@
 
 import argparse
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="SPM-Kit Validation Harness")
     parser.add_argument("--run", action="store_true", help="Run the validation suite")

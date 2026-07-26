@@ -3,8 +3,9 @@
 Gwyddion puede importar matrices de texto ASCII puro y luego se le asignan las 
 dimensiones físicas manualmente. Este módulo automatiza la conversión del phantom a .asc.
 """
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 
 def export_npz_to_asc(npz_path: Path, output_dir: Path) -> None:
@@ -27,4 +28,7 @@ def export_npz_to_asc(npz_path: Path, output_dir: Path) -> None:
         f.write(f"Alto (Height) Y: {y_size_m} m\n")
         f.write(f"Unidad Z: {z_unit}\n")
         f.write(f"Resolucion: {z_data.shape[1]} x {z_data.shape[0]} px\n")
-        f.write("\nEn 'Data Scale', introduce el Width y Height exactamente como aparecen arriba.\n")
+        f.write(
+            "\nEn 'Data Scale', introduce el Width y Height exactamente "
+            "como aparecen arriba.\n"
+        )

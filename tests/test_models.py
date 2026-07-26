@@ -1,7 +1,9 @@
 """Pruebas para los modelos."""
 
 from pathlib import Path
-from spmkit_validation.models import ValidationCase, RunRecord, Status
+
+from spmkit_validation.models import RunRecord, Status, ValidationCase
+
 
 def test_validation_case_creation():
     case = ValidationCase(

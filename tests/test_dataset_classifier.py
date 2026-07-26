@@ -11,7 +11,6 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
 from spmkit_validation import dataset_classifier
 
-
 EXPECTED_OUTPUTS = {
     "CLASSIFICATION_REPORT.md",
     "DUPLICATES.md",
@@ -95,7 +94,10 @@ def test_inventory_defaults_and_output_contract(
     output = root.parent / "validation" / "triage"
 
     assert run_classifier(monkeypatch, root) == 0
-    assert {path.relative_to(output).as_posix() for path in output.rglob("*") if path.is_file()} == EXPECTED_OUTPUTS
+    actual_outputs = {
+        path.relative_to(output).as_posix() for path in output.rglob("*") if path.is_file()
+    }
+    assert actual_outputs == EXPECTED_OUTPUTS
     assert_valid_inventory(output, dataset)
     assert read_csv(output / "duplicate_files.csv") == []
     assert read_csv(output / "duplicate_datasets.csv") == []

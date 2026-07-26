@@ -5,11 +5,11 @@ genera métricas y gráficas, y escribe un report.md.
 """
 import argparse
 import csv
-import json
-import numpy as np
 from pathlib import Path
 
 import matplotlib
+import numpy as np
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -27,7 +27,18 @@ def load_cases(csv_path: Path) -> tuple[list[dict], list[dict], list[dict]]:
         for row in reader:
             status = row['status']
             # Parse numerics
-            for k in ["Sa_gt", "Sa_obs", "Sa_err", "Sq_gt", "Sq_obs", "Sq_err", "Sz_gt", "Sz_obs", "Sz_err"]:
+            numeric_fields = [
+                "Sa_gt",
+                "Sa_obs",
+                "Sa_err",
+                "Sq_gt",
+                "Sq_obs",
+                "Sq_err",
+                "Sz_gt",
+                "Sz_obs",
+                "Sz_err",
+            ]
+            for k in numeric_fields:
                 try:
                     row[k] = float(row[k])
                 except (ValueError, TypeError):
@@ -115,7 +126,6 @@ def make_figures(valid: list[dict], out_dir: Path):
     fig_dir = out_dir / "figures"
     fig_dir.mkdir(parents=True, exist_ok=True)
     
-    err_sa = [c["Sa_err"] for c in valid]
     gt_sa = [c["Sa_gt"] for c in valid]
     obs_sa = [c["Sa_obs"] for c in valid]
     phantoms = [split_case_id(c["case_id"])[0] for c in valid]
@@ -125,15 +135,19 @@ def make_figures(valid: list[dict], out_dir: Path):
     noise_cases = [c for c in valid if "noise" in c["case_id"] or "clean" in c["case_id"]]
     if noise_cases:
         plt.figure(figsize=(6,4))
-        for ph in set(split_case_id(c["case_id"])[0] for c in noise_cases):
+        for ph in {split_case_id(c["case_id"])[0] for c in noise_cases}:
             ph_cases = [c for c in noise_cases if split_case_id(c["case_id"])[0] == ph]
             # Extraer nivel de ruido heurísticamente o por nombre
             def noise_lvl(c):
                 cor = split_case_id(c["case_id"])[1]
-                if cor == "clean": return 0
-                if "low" in cor: return 1
-                if "mid" in cor: return 2
-                if "high" in cor: return 3
+                if cor == "clean":
+                    return 0
+                if "low" in cor:
+                    return 1
+                if "mid" in cor:
+                    return 2
+                if "high" in cor:
+                    return 3
                 return 4
                 
             ph_cases.sort(key=noise_lvl)
@@ -153,7 +167,14 @@ def make_figures(valid: list[dict], out_dir: Path):
     # 2. Sesgo por phantom
     plt.figure(figsize=(6,4))
     unique_ph = list(set(phantoms))
-    biases = [bias(np.array([c["Sa_err"] for c in valid if split_case_id(c["case_id"])[0] == ph])) for ph in unique_ph]
+    biases = [
+        bias(
+            np.array(
+                [c["Sa_err"] for c in valid if split_case_id(c["case_id"])[0] == ph]
+            )
+        )
+        for ph in unique_ph
+    ]
     plt.bar(unique_ph, biases, color="#4c72b0")
     plt.axhline(0, color='black', linewidth=0.8)
     plt.xlabel("Phantom Base")
@@ -220,20 +241,31 @@ def write_report(csv_path: Path, out_dir: Path):
         f.write(f"- **Fallos técnicos**: {len(failed)}\n\n")
         
         f.write("## 2. Métricas Estadísticas Globales\n")
-        f.write("Métricas calculadas exclusivamente sobre los casos válidos. Intervalos de confianza (95%) generados vía Bootstrap (n=1000).\n\n")
-        f.write("| Variable | Sesgo Medio | MAE | MAE 95% CI | RMSE | RMSE 95% CI | MRE (Mediana Error Relativo) |\n")
+        f.write(
+            "Métricas calculadas exclusivamente sobre los casos válidos. "
+            "Intervalos de confianza (95%) generados vía Bootstrap (n=1000).\n\n"
+        )
+        f.write(
+            "| Variable | Sesgo Medio | MAE | MAE 95% CI | RMSE | "
+            "RMSE 95% CI | MRE (Mediana Error Relativo) |\n"
+        )
         f.write("|---|---|---|---|---|---|---|\n")
         
         for name, m in [("Sa", met_sa), ("Sq", met_sq), ("Sz", met_sz)]:
-            if not m: continue
+            if not m:
+                continue
             ci_mae = f"[{fmt_sci(m['mae_ci'][0])}, {fmt_sci(m['mae_ci'][1])}]"
             ci_rmse = f"[{fmt_sci(m['rmse_ci'][0])}, {fmt_sci(m['rmse_ci'][1])}]"
-            f.write(f"| **{name}** | {fmt_sci(m['bias'])} | {fmt_sci(m['mae'])} | {ci_mae} | {fmt_sci(m['rmse'])} | {ci_rmse} | {fmt_sci(m['mre'])} |\n")
+            f.write(
+                f"| **{name}** | {fmt_sci(m['bias'])} | {fmt_sci(m['mae'])} | "
+                f"{ci_mae} | {fmt_sci(m['rmse'])} | {ci_rmse} | "
+                f"{fmt_sci(m['mre'])} |\n"
+            )
             
         f.write("\n## 3. Desempeño por Tipo de Phantom (Sa RMSE)\n")
         f.write("| Phantom | Casos | RMSE (Sa) | Bias (Sa) |\n")
         f.write("|---|---|---|---|\n")
-        phantoms = set(split_case_id(c["case_id"])[0] for c in valid)
+        phantoms = {split_case_id(c["case_id"])[0] for c in valid}
         for ph in sorted(phantoms):
             sub = [c for c in valid if split_case_id(c["case_id"])[0] == ph]
             m = compute_metrics(sub, "Sa")
@@ -242,7 +274,7 @@ def write_report(csv_path: Path, out_dir: Path):
         f.write("\n## 4. Desempeño por Intensidad de Corrupción (Sa RMSE)\n")
         f.write("| Corrupción | Casos | RMSE (Sa) | Bias (Sa) |\n")
         f.write("|---|---|---|---|\n")
-        corrs = set(split_case_id(c["case_id"])[1] for c in valid)
+        corrs = {split_case_id(c["case_id"])[1] for c in valid}
         for cor in sorted(corrs):
             sub = [c for c in valid if split_case_id(c["case_id"])[1] == cor]
             m = compute_metrics(sub, "Sa")
