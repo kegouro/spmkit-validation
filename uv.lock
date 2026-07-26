@@ -1294,12 +1294,15 @@ wheels = [
 
 [[package]]
 name = "spmkit-validation"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "matplotlib", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pytest" },
     { name = "pyyaml" },
 ]
@@ -1313,6 +1316,7 @@ dev = [
 requires-dist = [
     { name = "jsonschema", specifier = ">=4.18,<5" },
     { name = "matplotlib", specifier = ">=3.7" },
+    { name = "numpy", specifier = ">=1.24,<3" },
     { name = "pytest", specifier = ">=7.0" },
     { name = "pyyaml" },
 ]
