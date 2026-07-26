@@ -389,13 +389,25 @@ def load_receipt_document(path: str | Path) -> tuple[dict[str, Any], bytes]:
     receipt_path = Path(path)
     try:
         raw = receipt_path.read_bytes()
+    except OSError as exc:
+        raise LifecycleError(
+            [
+                lifecycle_issue(
+                    LifecycleIssueCategory.FILESYSTEM,
+                    "RECEIPT_READ_FAILED",
+                    "",
+                    f"receipt could not be read: {exc}",
+                )
+            ]
+        ) from exc
+    try:
         document = json.loads(
             raw,
             parse_constant=_reject_constant,
             parse_float=_finite_float,
             object_pairs_hook=_unique_pairs,
         )
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+    except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
         raise LifecycleError(
             [
                 lifecycle_issue(

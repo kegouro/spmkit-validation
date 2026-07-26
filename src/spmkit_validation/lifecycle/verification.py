@@ -168,6 +168,8 @@ def verify_frozen_snapshot(
     try:
         receipt_document, receipt_raw = load_receipt_document(receipt_path)
     except LifecycleError as exc:
+        if any(issue.category is LifecycleIssueCategory.FILESYSTEM for issue in exc.issues):
+            raise
         return _invalid_result("RECEIPT_INVALID", list(exc.issues))
 
     receipt_issues = list(validate_freeze_receipt(receipt_document))
