@@ -58,6 +58,8 @@ La relación opaca `sealed_id → path` permanece fuera del bundle y del lifecyc
 `http`, `https` y otras URIs con scheme no local no se descargan ni siguen
 redirects. Su estado es `REMOTE_ARTIFACT_NOT_VERIFIED`. Esto representa una
 verificación incompleta, no un PASS ni un resultado científico `ERROR`.
+`verify-artifacts` termina con exit code `6`; `freeze` no publica un snapshot si
+queda cualquier artefacto remoto sin verificar.
 
 ## RunManifest 1.0
 

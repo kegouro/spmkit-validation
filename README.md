@@ -3,6 +3,24 @@
 Arnés externo para validación de SPM-Kit.
 Este repositorio ejecuta comandos de SPM-Kit por medio de `subprocess` garantizando aislamiento, evitando el uso de API interna y probando el sistema como una caja negra.
 
+## ValidationBundle lifecycle
+
+La versión `0.1.1` incorpora operaciones black-box que no ejecutan campañas:
+
+```bash
+spmkit-validation bundle validate campaign-draft.json
+spmkit-validation bundle verify-artifacts campaign-draft.json --artifact-root evidence-root
+spmkit-validation bundle freeze campaign-draft.json \
+  --artifact-root evidence-root --output-dir snapshots
+spmkit-validation bundle verify-snapshot \
+  snapshots/SHA256/bundle.json snapshots/SHA256/freeze-receipt.json
+```
+
+El contrato normativo sigue siendo `ValidationBundle 0.1.0`. Consulte
+`docs/BUNDLE_LIFECYCLE.md` y `docs/ARTIFACT_VERIFICATION.md` para las garantías,
+limitaciones, política de paths y exit codes. El gate completo no científico se
+reproduce con `make phase01b-gates`.
+
 ## Ejecución Local
 
 El framework está automatizado usando `Make` y requiere que tanto `spmkit` como `spmkit-phantoms` residan en el mismo nivel de directorios:

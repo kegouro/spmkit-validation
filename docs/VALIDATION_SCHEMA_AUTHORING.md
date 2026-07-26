@@ -113,9 +113,22 @@ declare tanto `determinism_requirement` como
 
 ## 6. Congele antes de ejecutar
 
-Revise campaña, casos y tolerancias. Luego establezca una fecha `frozen_at` y
-cambie el estado a `FROZEN`. Todos los `predeclared_at` deben ser anteriores o
-iguales a `frozen_at`. Los runs deben comenzar después.
+Revise campaña, casos y tolerancias, pero no edite manualmente `status` ni
+`frozen_at`. Mantenga el archivo fuente en `DRAFT` y use el lifecycle:
+
+```bash
+spmkit-validation bundle validate campaign-draft.json
+spmkit-validation bundle verify-artifacts campaign-draft.json \
+  --artifact-root evidence-root
+spmkit-validation bundle freeze campaign-draft.json \
+  --artifact-root evidence-root \
+  --output-dir snapshots
+```
+
+Para una reproducción controlada puede añadir
+`--frozen-at 2026-02-01T00:00:00Z`. Todos los `predeclared_at` deben ser
+anteriores o iguales a ese instante. El lifecycle crea el documento `FROZEN`,
+su hash content-addressed y el receipt sin modificar el draft.
 
 Los estados posteriores `RUNNING`, `COMPLETED` y `ABORTED` conservan
 `frozen_at`; no significan que el protocolo pueda reescribirse.
@@ -185,3 +198,14 @@ Para validar el ejemplo distribuido:
 python -c 'from spmkit_validation.schemas import load_validation_bundle, assert_valid_bundle; assert_valid_bundle(load_validation_bundle("examples/campaigns/synthetic_roughness_v0.1.json"))'
 ```
 
+Para comprobar posteriormente el snapshot y, opcionalmente, sus artefactos:
+
+```bash
+spmkit-validation bundle verify-snapshot \
+  snapshots/SHA256/bundle.json \
+  snapshots/SHA256/freeze-receipt.json \
+  --artifact-root evidence-root
+```
+
+La congelación demuestra consistencia del documento y de los bytes locales en
+un momento dado. No demuestra que el protocolo sea científicamente correcto.

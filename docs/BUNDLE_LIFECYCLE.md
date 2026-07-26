@@ -132,6 +132,26 @@ La API no importa SPM-Kit, GUI, readers, adapters ni librerías científicas.
 `ValidationBundle` sigue teniendo como fuente normativa los schemas JSON de
 v0.1 y la validación semántica de PHASE_01A.
 
+## CLI
+
+Con `spmkit-validation 0.1.1` instalado:
+
+```bash
+spmkit-validation bundle validate BUNDLE.json
+spmkit-validation bundle verify-artifacts BUNDLE.json --artifact-root ARTIFACT_ROOT
+spmkit-validation bundle freeze BUNDLE.json \
+  --artifact-root ARTIFACT_ROOT \
+  --output-dir SNAPSHOTS
+spmkit-validation bundle verify-snapshot \
+  SNAPSHOT.json FREEZE-RECEIPT.json \
+  --artifact-root ARTIFACT_ROOT
+```
+
+`freeze` acepta `--frozen-at 2026-02-01T00:00:00Z` para reproducción y tests.
+Cada operación acepta `--json`. `validate` solo lee el bundle;
+`verify-snapshot` omite la reverificación de artefactos cuando no se entrega un
+root y lo declara mediante `artifact_status = "ARTIFACT_NOT_VERIFIED"`.
+
 ## Límite hacia PHASE_01C
 
 PHASE_01B no ejecuta comandos científicos ni crea resultados. PHASE_01C podrá
