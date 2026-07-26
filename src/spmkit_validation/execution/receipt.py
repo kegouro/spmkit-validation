@@ -57,9 +57,10 @@ class ExecutionReceipt:
     tool: Mapping[str, Any]
     limitations: tuple[str, ...]
     receipt_sha256: str
+    software_verification: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        document = {
             "receipt_version": self.receipt_version,
             "snapshot_type": self.snapshot_type,
             "canonicalization": self.canonicalization,
@@ -83,6 +84,9 @@ class ExecutionReceipt:
             "limitations": list(self.limitations),
             "receipt_sha256": self.receipt_sha256,
         }
+        if self.software_verification is not None:
+            document["software_verification"] = dict(self.software_verification)
+        return document
 
     def canonical_bytes(self) -> bytes:
         return canonical_bundle_bytes(self.to_dict())
@@ -115,6 +119,11 @@ class ExecutionReceipt:
             tool=dict(document["tool"]),
             limitations=tuple(document["limitations"]),
             receipt_sha256=document["receipt_sha256"],
+            software_verification=(
+                dict(document["software_verification"])
+                if "software_verification" in document
+                else None
+            ),
         )
 
 
@@ -230,6 +239,27 @@ def _receipt_schema() -> dict[str, Any]:
                 "items": {"type": "string", "minLength": 1},
             },
             "receipt_sha256": sha,
+            "software_verification": {
+                "type": "object",
+                "required": [
+                    "software_test_run_id",
+                    "junit_sha256",
+                    "test_suite_manifest_sha256",
+                    "scientific_run_ids",
+                ],
+                "properties": {
+                    "software_test_run_id": {"type": "string", "minLength": 1},
+                    "junit_sha256": sha,
+                    "test_suite_manifest_sha256": sha,
+                    "scientific_run_ids": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": True,
+                        "items": {"type": "string", "minLength": 1},
+                    },
+                },
+                "additionalProperties": False,
+            },
         },
         "additionalProperties": False,
     }
@@ -392,6 +422,45 @@ def write_execution_receipt(
             "Local repetition in one environment is not LEVEL 5 evidence.",
         ],
     }
+    software_runs = [
+        run for run in result_bundle["runs"] if run.get("run_type") == "SOFTWARE_TEST"
+    ]
+    if software_runs:
+        if len(software_runs) != 1:
+            raise CampaignExecutionError(
+                [
+                    execution_issue(
+                        CampaignExecutionIssueCategory.RECEIPT,
+                        "EXECUTION_RECEIPT.SOFTWARE_RUN_COUNT",
+                        "/runs",
+                        "cumulative receipt requires exactly one SOFTWARE_TEST run",
+                    )
+                ]
+            )
+        artifacts = {item["artifact_id"]: item for item in result_bundle["evidence"]}
+        junit = artifacts.get("artifact.software-test.junit")
+        manifest = artifacts.get("artifact.software-test.suite-manifest")
+        if junit is None or manifest is None:
+            raise CampaignExecutionError(
+                [
+                    execution_issue(
+                        CampaignExecutionIssueCategory.RECEIPT,
+                        "EXECUTION_RECEIPT.SOFTWARE_EVIDENCE_MISSING",
+                        "/evidence",
+                        "cumulative receipt requires JUnit and suite-manifest evidence",
+                    )
+                ]
+            )
+        receipt_document["software_verification"] = {
+            "software_test_run_id": software_runs[0]["run_id"],
+            "junit_sha256": junit["sha256"],
+            "test_suite_manifest_sha256": manifest["sha256"],
+            "scientific_run_ids": [
+                run["run_id"]
+                for run in result_bundle["runs"]
+                if run.get("run_type") == "VALIDATION"
+            ],
+        }
     receipt_document["receipt_sha256"] = _payload_sha256(receipt_document)
     receipt = ExecutionReceipt.from_dict(receipt_document)
     receipt_bytes = receipt.canonical_bytes()

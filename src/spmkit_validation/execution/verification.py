@@ -152,6 +152,31 @@ def _metadata_issues(
                 "receipt wheel hash contradicts the registered wheel artifact",
             )
         )
+    software_runs = [
+        run for run in bundle.get("runs", []) if run.get("run_type") == "SOFTWARE_TEST"
+    ]
+    if software_runs:
+        artifacts = {item["artifact_id"]: item for item in bundle.get("evidence", [])}
+        junit = artifacts.get("artifact.software-test.junit")
+        manifest = artifacts.get("artifact.software-test.suite-manifest")
+        expected_software = {
+            "software_test_run_id": software_runs[0]["run_id"] if len(software_runs) == 1 else None,
+            "junit_sha256": junit.get("sha256") if junit else None,
+            "test_suite_manifest_sha256": manifest.get("sha256") if manifest else None,
+            "scientific_run_ids": [
+                run["run_id"]
+                for run in bundle.get("runs", [])
+                if run.get("run_type") == "VALIDATION"
+            ],
+        }
+        if dict(receipt.software_verification or {}) != expected_software:
+            issues.append(
+                _issue(
+                    "RESULT_RECEIPT.SOFTWARE_VERIFICATION_MISMATCH",
+                    "/software_verification",
+                    "receipt software verification hashes or run IDs contradict the result bundle",
+                )
+            )
     return issues
 
 

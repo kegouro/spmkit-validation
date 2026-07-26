@@ -1,6 +1,8 @@
 """Public black-box API for PHASE_01C synthetic campaign execution."""
 
 from .continuity import verify_protocol_continuity
+from .cumulative import CumulativeExecutionResult, execute_cumulative_campaign
+from .cumulative_population import populate_cumulative_result_bundle
 from .cumulative_protocol import (
     CUMULATIVE_CAMPAIGN_ID,
     SOFTWARE_CASE_ID,
@@ -45,6 +47,7 @@ __all__ = [
     "CAMPAIGN_ID",
     "CASE_SPECS",
     "CUMULATIVE_CAMPAIGN_ID",
+    "CumulativeExecutionResult",
     "CampaignExecutionError",
     "CampaignExecutionIssue",
     "CampaignExecutionResult",
@@ -62,12 +65,14 @@ __all__ = [
     "deterministic_npz_bytes",
     "discrete_roughness",
     "execute_frozen_campaign",
+    "execute_cumulative_campaign",
     "execute_software_test",
     "export_software_test_suite",
     "normalized_scientific_record",
     "install_sut_wheel_environment",
     "parse_junit_xml",
     "populate_result_bundle",
+    "populate_cumulative_result_bundle",
     "prepare_synthetic_roughness_campaign",
     "prepare_cumulative_verification_campaign",
     "surface_array",

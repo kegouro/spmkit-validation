@@ -105,8 +105,11 @@ def populate_result_bundle(
         record["case_id"]: record["analytical"] for record in ground_truth_document["cases"]
     }
     runs_by_case = {run["case_ids"][0]: run for run in bundle["runs"]}
+    numeric_cases = [
+        case for case in bundle["cases"] if case["case_id"] in truth_by_case
+    ]
     comparisons: list[dict[str, Any]] = []
-    for case in bundle["cases"]:
+    for case in numeric_cases:
         case_id = case["case_id"]
         run = runs_by_case[case_id]
         tolerances = {item["measurand_id"]: item for item in case["tolerances"]}
@@ -169,7 +172,7 @@ def populate_result_bundle(
         if artifact["scientific_role"] in {"QUANTITATIVE_RESULT", "REFERENCE_VALUE"}
     )
     bundle["claims"] = [
-        _claim(measurand, bundle["cases"], comparisons, quantitative_evidence)
+        _claim(measurand, numeric_cases, comparisons, quantitative_evidence)
         for measurand in MEASURANDS
     ]
     verify_protocol_continuity(frozen_protocol_bundle, bundle)
