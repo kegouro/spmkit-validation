@@ -272,6 +272,21 @@ def test_installed_environment_wheel_mismatch_blocks(tmp_path: Path) -> None:
     }
 
 
+def test_tampered_frozen_suite_manifest_blocks_before_pytest(tmp_path: Path) -> None:
+    prepared, frozen, wheel, environment = _frozen(tmp_path)
+    prepared.suite_manifest_path.write_bytes(prepared.suite_manifest_path.read_bytes() + b"\n")
+    with pytest.raises(CampaignExecutionError, match="PROTOCOL_NOT_VERIFIED"):
+        execute_software_test(
+            frozen.snapshot_path,
+            frozen.receipt_path,
+            artifact_root=prepared.output_dir,
+            sut_wheel=wheel,
+            installed_environment=environment,
+            output_dir=prepared.output_dir / "execution/software-test",
+        )
+    assert not (prepared.output_dir / "execution").exists()
+
+
 def test_fake_probe_payload_is_json_machine_readable(tmp_path: Path) -> None:
     wheel = tmp_path / "wheel.whl"
     wheel.write_bytes(b"wheel")

@@ -5,10 +5,13 @@ import json
 from pathlib import Path
 
 from spmkit_validation.execution import (
+    CampaignExecutionError,
     CumulativeExecutionResult,
+    compare_campaign_repetition,
     execute_frozen_campaign,
     execute_software_test,
     populate_cumulative_result_bundle,
+    verify_protocol_continuity,
     verify_result_snapshot,
     write_execution_receipt,
 )
@@ -95,6 +98,45 @@ def test_failed_junit_blocks_level_1_and_level_2(tmp_path: Path) -> None:
     assert "CLAIM.LEVEL_1_EVIDENCE_INSUFFICIENT" in _codes(contradicted)
 
 
+def test_level_1_without_linked_junit_evidence_is_rejected(tmp_path: Path) -> None:
+    _, _, _, bundle = _populated(tmp_path)
+    unsupported = copy.deepcopy(bundle)
+    software_run = unsupported["runs"][0]
+    software_run["output_artifact_ids"].remove("artifact.software-test.junit")
+
+    assert "CLAIM.LEVEL_1_EVIDENCE_INSUFFICIENT" in _codes(unsupported)
+
+
+def test_cumulative_protocol_continuity_rejects_deleted_software_case(tmp_path: Path) -> None:
+    _, frozen, _, bundle = _populated(tmp_path)
+    drifted = copy.deepcopy(bundle)
+    drifted["cases"] = [
+        case for case in drifted["cases"] if case["case_id"] != "case.software.roughness-wheel"
+    ]
+    frozen_bundle = json.loads(frozen.snapshot_path.read_text(encoding="utf-8"))
+
+    try:
+        verify_protocol_continuity(frozen_bundle, drifted)
+    except CampaignExecutionError as exc:
+        assert "PROTOCOL.CASES_SET_DRIFT" in {issue.code for issue in exc.issues}
+    else:
+        raise AssertionError("deleted frozen software case was accepted")
+
+
+def test_cumulative_scientific_repeatability_ignores_authorized_timing(tmp_path: Path) -> None:
+    _, _, _, bundle = _populated(tmp_path)
+    repeated = copy.deepcopy(bundle)
+    for run in repeated["runs"]:
+        run["started_at"] = "2026-07-26T10:00:00Z"
+        run["finished_at"] = "2026-07-26T10:00:01Z"
+    record = compare_campaign_repetition(bundle, repeated)
+    assert record["status"] == "PASS"
+    assert record["determinism_category"] == "NUMERICALLY_REPEATABLE"
+
+    repeated["comparisons"][0]["observed"] = 1.0
+    assert compare_campaign_repetition(bundle, repeated)["status"] == "FAIL"
+
+
 def test_cumulative_receipt_records_software_hashes_and_detects_junit_tampering(
     tmp_path: Path,
 ) -> None:
@@ -135,3 +177,31 @@ def test_cumulative_receipt_records_software_hashes_and_detects_junit_tampering(
         prepared.output_dir,
     )
     assert tampered.status == "ARTIFACT_MISMATCH"
+
+
+def test_cumulative_result_detects_wheel_artifact_tampering(tmp_path: Path) -> None:
+    prepared, frozen, cumulative, bundle = _populated(tmp_path)
+    published = write_execution_receipt(
+        bundle,
+        frozen_protocol_path=frozen.snapshot_path,
+        freeze_receipt_path=frozen.receipt_path,
+        artifact_root=prepared.output_dir,
+        output_dir=prepared.output_dir / "execution/result-snapshot",
+        wheel_sha256=cumulative.wheel_sha256,
+        started_at=cumulative.started_at,
+        completed_at=cumulative.completed_at,
+    )
+    wheel_artifact = next(
+        item for item in bundle["evidence"] if item["artifact_id"] == "artifact.execution.sut-wheel"
+    )
+    wheel_path = prepared.output_dir / wheel_artifact["relative_uri"]
+    wheel_path.write_bytes(wheel_path.read_bytes() + b"tamper")
+
+    verified = verify_result_snapshot(
+        published.result_bundle_path,
+        published.execution_receipt_path,
+        frozen.snapshot_path,
+        frozen.receipt_path,
+        prepared.output_dir,
+    )
+    assert verified.status == "ARTIFACT_MISMATCH"
