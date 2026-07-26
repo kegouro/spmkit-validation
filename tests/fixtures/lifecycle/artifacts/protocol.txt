@@ -1,0 +1,2 @@
+Synthetic lifecycle protocol fixture.
+No campaign was executed to create this file.

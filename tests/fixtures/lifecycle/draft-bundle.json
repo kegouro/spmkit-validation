@@ -1,0 +1,245 @@
+{
+  "schema_version": "0.1.0",
+  "campaign": {
+    "campaign_id": "campaign.synthetic.lifecycle.v0.1",
+    "title": "Synthetic lifecycle protocol",
+    "objective": "Exercise bundle freeze mechanics using a trivial analytical identity without executing a campaign.",
+    "protocol_version": "0.1.0",
+    "status": "DRAFT",
+    "created_at": "2026-01-01T00:00:00Z",
+    "frozen_at": null,
+    "system_under_test": {
+      "package_name": "spmkit",
+      "version": "0.1.5.dev0",
+      "git_commit": "11daf8879c9e3e098ce844778592525d4f2bdc53",
+      "repository": "https://github.com/kegouro/spmkit.git",
+      "ref": "chore/workspace-sanitize",
+      "platform": "synthetic-lifecycle-platform",
+      "environment_id": "environment.synthetic.lifecycle"
+    },
+    "intended_validation_level": "LEVEL 0 — CLAIMED",
+    "determinism_requirement": "CANONICALLY_REPEATABLE",
+    "limitations": [
+      "Protocol fixture only; no campaign or scientific operation has been executed.",
+      "The identity expression is included only to exercise lifecycle structure."
+    ],
+    "responsible_parties": [
+      {
+        "party_id": "party.synthetic.protocol-author",
+        "name": "Synthetic protocol author",
+        "role": "protocol author"
+      }
+    ]
+  },
+  "datasets": [
+    {
+      "dataset_id": "dataset.synthetic.protocol-input",
+      "title": "Synthetic identity input descriptor",
+      "role": "VERIFICATION",
+      "source_type": "SYNTHETIC",
+      "provenance": {
+        "producer": "Synthetic lifecycle fixture",
+        "method": "Static public protocol text authored before freeze.",
+        "created_at": "2026-01-01T00:10:00Z",
+        "source_artifact_ids": [
+          "artifact.lifecycle.protocol"
+        ]
+      },
+      "license": "CC0-1.0",
+      "checksum": "91657f50e8b388e7114a12f6caec02f23cd99f6a50665f293054222b9df9f5d9",
+      "format": {
+        "media_type": "text/plain",
+        "specification": "UTF-8 synthetic lifecycle protocol v1"
+      },
+      "access_policy": {
+        "access_level": "PUBLIC",
+        "access_state": "OPENED"
+      },
+      "locator": "protocol.txt",
+      "public_metadata": {
+        "synthetic": true,
+        "campaign_executed": false
+      },
+      "limitations": [
+        "Descriptor metadata only; it is not an instrument dataset."
+      ]
+    }
+  ],
+  "references": [
+    {
+      "reference_id": "reference.synthetic.identity",
+      "reference_type": "ANALYTICAL_REFERENCE",
+      "name": "Identity function analytical reference",
+      "version": "1",
+      "producer": {
+        "name": "Synthetic lifecycle fixture",
+        "is_third_party": false,
+        "operator_ids": [
+          "party.synthetic.protocol-author"
+        ]
+      },
+      "method": "The identity f(x)=x maps the declared scalar 1 to the analytical scalar 1.",
+      "independence_justification": {
+        "rationale": "The trivial expression is directly inspectable but is not a third-party independent reference.",
+        "shared_algorithms": [],
+        "shared_formulas": [
+          "Identity function"
+        ],
+        "shared_libraries": [],
+        "shared_datasets": [
+          "dataset.synthetic.protocol-input"
+        ],
+        "shared_authors": [
+          "Synthetic protocol author"
+        ],
+        "circularity_risks": [
+          "The same synthetic fixture declares the protocol and analytical expression."
+        ],
+        "independence_assessment": "NOT_INDEPENDENT"
+      },
+      "shared_dependencies": {
+        "software": [],
+        "data": [
+          "dataset.synthetic.protocol-input"
+        ],
+        "methods": [
+          "Identity function"
+        ],
+        "notes": [
+          "No numerical reference implementation is invoked."
+        ]
+      },
+      "known_limitations": [
+        "Only a trivial synthetic identity is represented."
+      ],
+      "evidence_ids": [
+        "artifact.lifecycle.analytical-reference"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "case.synthetic.identity-protocol",
+      "dataset_id": "dataset.synthetic.protocol-input",
+      "reference_id": "reference.synthetic.identity",
+      "purpose": "VERIFICATION",
+      "operation": {
+        "name": "synthetic-identity",
+        "version": "protocol-only-v1",
+        "parameters": {
+          "execution_permitted": false
+        }
+      },
+      "input_selector": {
+        "selector_type": "FULL_DATASET",
+        "evidence_artifact_id": "artifact.lifecycle.protocol"
+      },
+      "preprocessing": [],
+      "measurands": [
+        {
+          "measurand_id": "identity_output",
+          "canonical_unit": "1",
+          "physical_quantity": "dimensionless synthetic scalar",
+          "description": "Output of the declared identity expression for a dimensionless scalar."
+        }
+      ],
+      "tolerances": [
+        {
+          "tolerance_id": "tolerance.synthetic.identity.exact",
+          "measurand_id": "identity_output",
+          "type": "ABSOLUTE",
+          "absolute": 0.0,
+          "unit": "1",
+          "justification": "The protocol declares an exact symbolic identity before any execution.",
+          "source": "Synthetic analytical identity predeclared for lifecycle testing"
+        }
+      ],
+      "expected_units": {
+        "identity_output": "1"
+      },
+      "acceptance_policy": {
+        "aggregation": "ALL_MEASURANDS_MUST_PASS",
+        "on_evaluation_error": "ERROR",
+        "on_missing_result": "NOT_EVALUATED"
+      },
+      "predeclared_at": "2026-01-02T00:00:00Z",
+      "case_status": "ACTIVE"
+    }
+  ],
+  "runs": [],
+  "comparisons": [],
+  "evidence": [
+    {
+      "artifact_id": "artifact.lifecycle.protocol",
+      "artifact_type": "INPUT",
+      "media_type": "text/plain",
+      "relative_uri": "protocol.txt",
+      "sha256": "91657f50e8b388e7114a12f6caec02f23cd99f6a50665f293054222b9df9f5d9",
+      "size_bytes": 84,
+      "created_at": "2026-01-01T00:10:00Z",
+      "producer": {
+        "name": "Synthetic lifecycle fixture",
+        "version": "1"
+      },
+      "regenerable": false,
+      "generation_command": [],
+      "source_artifact_ids": [],
+      "scientific_role": "INPUT_DATA",
+      "contains_sensitive_data": false,
+      "limitations": [
+        "Static protocol text only."
+      ]
+    },
+    {
+      "artifact_id": "artifact.lifecycle.analytical-reference",
+      "artifact_type": "REFERENCE_EXPORT",
+      "media_type": "application/json",
+      "relative_uri": "analytical-reference.json",
+      "sha256": "249e95d92c55ba30bc2b10fdf61a97efb3e18a3f26bb3ec5d0ae77f126fa5931",
+      "size_bytes": 54,
+      "created_at": "2026-01-01T00:20:00Z",
+      "producer": {
+        "name": "Synthetic lifecycle fixture",
+        "version": "1"
+      },
+      "regenerable": false,
+      "generation_command": [],
+      "source_artifact_ids": [
+        "artifact.lifecycle.protocol"
+      ],
+      "scientific_role": "REFERENCE_VALUE",
+      "contains_sensitive_data": false,
+      "limitations": [
+        "Trivial analytical identity; not an independent implementation."
+      ]
+    },
+    {
+      "artifact_id": "artifact.lifecycle.run-manifest",
+      "artifact_type": "MANIFEST",
+      "media_type": "application/json",
+      "relative_uri": "synthetic-run-manifest.json",
+      "sha256": "b5407034dbf1622e309ddc5e5b02680a3691c7d773f8a4ee630bbca1e77635b0",
+      "size_bytes": 97,
+      "created_at": "2026-01-01T00:30:00Z",
+      "producer": {
+        "name": "Synthetic lifecycle fixture",
+        "version": "1"
+      },
+      "regenerable": false,
+      "generation_command": [],
+      "source_artifact_ids": [
+        "artifact.lifecycle.protocol"
+      ],
+      "scientific_role": "PROVENANCE",
+      "contains_sensitive_data": false,
+      "external_schema": {
+        "name": "spmkit.core.export.RunManifest",
+        "version": "1.0"
+      },
+      "limitations": [
+        "Synthetic NOT_RUN manifest used only to exercise external artifact integration."
+      ]
+    }
+  ],
+  "claims": []
+}
