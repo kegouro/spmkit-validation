@@ -60,6 +60,52 @@ spmkit-validation campaign execute-cumulative \
 `make phase01d-gates` reproduce el workflow desde wheels y verifica JUnit,
 claims acumulativos, repetición, continuidad y tampering.
 
+### Gwyddion roughness cross-validation v0.1
+
+Una campaña de validación externa congelada evaluó el wheel publicado de
+SPMKit 0.1.4 frente a una instalación upstream verificada de las bibliotecas
+Gwyddion 2.71. Se procesaron independientemente seis superficies sintéticas
+`binary64` de campo completo mediante SPMKit y la ruta de referencia Gwyddion.
+Sa, Sq y Sz produjeron 18/18 comparaciones cruzadas conformes, sin fallos,
+errores ni resultados inconclusos.
+
+La campaña respalda claims limitadas `LEVEL 3 CROSS_VALIDATED` para Sa, Sq y
+Sz dentro de ese alcance sintético. La repetición fue numéricamente idéntica
+para los 18 valores y outcomes; los tests negativos de independencia pasaron
+8/8 y los tests de manipulación del protocolo pasaron 7/7.
+
+| Evidence | Result |
+| --- | ---: |
+| SPMKit executions | 6 completed |
+| Gwyddion executions | 6 completed |
+| Sa/Sq/Sz comparisons | 18/18 PASS |
+| Software checks | 12/12 PASS |
+| Independence negative tests | 8/8 PASS |
+| Tampering tests | 7/7 PASS |
+| Repeatability | PASS |
+| Claim level | LEVEL 3, limited scope |
+
+La campaña no reclama validación física, datos reales, blind holdout, Level 5,
+autenticidad criptográfica ni equivalencia universal con Gwyddion. La
+referencia usa bibliotecas de Gwyddion mediante un wrapper congelado escrito
+por el harness; la acumulación de Sa reside en ese wrapper. El bloqueo
+histórico `BLOCKED_GWYDDION_REFERENCE_CONTRACT` se conserva como evidencia y
+fue superado por `phase01e.install-and-resume.001`.
+
+La evidencia canónica incluye el
+[registro final de auditoría](evidence/phase01e-gwyddion/gate-results.json),
+el [protocolo congelado](evidence/phase01e-gwyddion/protocol-snapshot/) y el
+[snapshot de resultados](evidence/phase01e-gwyddion/result-snapshot/). El
+cierre auditado permanece fijado en el
+[commit canónico](https://github.com/kegouro/spmkit-validation/tree/2a3d6c780722a79cb19c079cec0476969267b10b)
+y no constituye una release de SPMKit.
+
+Reproducir:
+
+```bash
+make phase01e-gates
+```
+
 ## Ejecución Local
 
 El framework está automatizado usando `Make` y requiere que tanto `spmkit` como `spmkit-phantoms` residan en el mismo nivel de directorios:
