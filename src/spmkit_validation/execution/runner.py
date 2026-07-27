@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import json
 import math
 import os
@@ -199,7 +200,10 @@ def _artifact(
     limitations: list[str] | None = None,
 ) -> dict[str, Any]:
     digest, size = _hash_file(path)
-    producer: dict[str, Any] = {"name": "spmkit-validation", "version": "0.1.3"}
+    producer: dict[str, Any] = {
+        "name": "spmkit-validation",
+        "version": importlib.metadata.version("spmkit-validation"),
+    }
     if run_id is not None:
         producer["run_id"] = run_id
     document: dict[str, Any] = {
@@ -282,10 +286,15 @@ def install_sut_wheel_environment(
     sut_version: str,
     *,
     test_dependencies: Sequence[str] = (),
+    dependency_wheels: Sequence[Path] = (),
 ) -> InstalledSUTEnvironment:
-    """Install one declared wheel and exact test dependencies into Python 3.12."""
+    """Install one SUT wheel and explicitly supplied frozen dependencies offline."""
 
     wheel = _safe_regular_file(wheel, "EXECUTION.INVALID_WHEEL", "/sut_wheel")
+    local_dependencies = tuple(
+        _safe_regular_file(item, "EXECUTION.INVALID_DEPENDENCY_WHEEL", "/dependency_wheels")
+        for item in dependency_wheels
+    )
     wheel_sha256, wheel_size = _hash_file(wheel)
     uv = shutil.which("uv")
     if uv is None:
@@ -326,6 +335,7 @@ def install_sut_wheel_environment(
             "--python",
             str(venv / "bin" / "python"),
             str(wheel),
+            *(str(item) for item in local_dependencies),
             *test_dependencies,
         ],
         check=False,

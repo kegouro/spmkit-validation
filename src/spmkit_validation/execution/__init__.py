@@ -1,5 +1,7 @@
 """Public black-box API for PHASE_01C synthetic campaign execution."""
 
+from importlib import import_module
+
 from .continuity import verify_protocol_continuity
 from .cumulative import CumulativeExecutionResult, execute_cumulative_campaign
 from .cumulative_population import populate_cumulative_result_bundle
@@ -61,18 +63,25 @@ __all__ = [
     "SoftwareTestExecutionResult",
     "analytical_roughness",
     "compare_campaign_repetition",
+    "compare_gwyddion_cross_repetition",
     "derive_tolerance_budget",
     "deterministic_npz_bytes",
     "discrete_roughness",
     "execute_frozen_campaign",
     "execute_cumulative_campaign",
+    "execute_gwyddion_cross_validation_campaign",
     "execute_software_test",
     "export_software_test_suite",
     "normalized_scientific_record",
+    "normalized_gwyddion_cross_record",
     "install_sut_wheel_environment",
     "parse_junit_xml",
     "populate_result_bundle",
     "populate_cumulative_result_bundle",
+    "populate_gwyddion_cross_validation_result_bundle",
+    "prepare_gwyddion_cross_validation_campaign",
+    "GwyddionCrossValidationExecutionResult",
+    "PreparedGwyddionCrossValidationCampaign",
     "prepare_synthetic_roughness_campaign",
     "prepare_cumulative_verification_campaign",
     "surface_array",
@@ -81,3 +90,34 @@ __all__ = [
     "validate_import_probe",
     "write_execution_receipt",
 ]
+
+_GWYDDION_EXPORTS = {
+    "GwyddionCrossValidationExecutionResult": (
+        "spmkit_validation.execution.gwyddion_cross_validation"
+    ),
+    "execute_gwyddion_cross_validation_campaign": (
+        "spmkit_validation.execution.gwyddion_cross_validation"
+    ),
+    "compare_gwyddion_cross_repetition": "spmkit_validation.execution.gwyddion_population",
+    "normalized_gwyddion_cross_record": "spmkit_validation.execution.gwyddion_population",
+    "populate_gwyddion_cross_validation_result_bundle": (
+        "spmkit_validation.execution.gwyddion_population"
+    ),
+    "PreparedGwyddionCrossValidationCampaign": (
+        "spmkit_validation.execution.gwyddion_protocol"
+    ),
+    "prepare_gwyddion_cross_validation_campaign": (
+        "spmkit_validation.execution.gwyddion_protocol"
+    ),
+}
+
+
+def __getattr__(name: str):
+    """Load optional Gwyddion workflow modules only when explicitly requested."""
+
+    module_name = _GWYDDION_EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(name)
+    value = getattr(import_module(module_name), name)
+    globals()[name] = value
+    return value

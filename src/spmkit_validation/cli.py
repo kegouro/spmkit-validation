@@ -13,9 +13,12 @@ from spmkit_validation.execution import (
     CampaignExecutionError,
     execute_cumulative_campaign,
     execute_frozen_campaign,
+    execute_gwyddion_cross_validation_campaign,
     populate_cumulative_result_bundle,
+    populate_gwyddion_cross_validation_result_bundle,
     populate_result_bundle,
     prepare_cumulative_verification_campaign,
+    prepare_gwyddion_cross_validation_campaign,
     prepare_synthetic_roughness_campaign,
     verify_result_snapshot,
     write_execution_receipt,
@@ -110,6 +113,27 @@ def _build_parser() -> argparse.ArgumentParser:
     prepare_cumulative.add_argument("--sut-version", default="0.1.5.dev0")
     prepare_cumulative.add_argument("--json", action="store_true", dest="json_output")
 
+    prepare_cross = campaign_operations.add_parser(
+        "prepare-gwyddion-cross-validation",
+        help="prepare frozen-before-run SPM-Kit versus Gwyddion-library cases",
+    )
+    prepare_cross.add_argument("--output-dir", required=True, type=Path)
+    prepare_cross.add_argument("--sut-repository", required=True, type=Path)
+    prepare_cross.add_argument("--gwyddion-identity", required=True, type=Path)
+    prepare_cross.add_argument("--installed-viability", required=True, type=Path)
+    prepare_cross.add_argument("--helper-source", required=True, type=Path)
+    prepare_cross.add_argument("--helper-binary", required=True, type=Path)
+    prepare_cross.add_argument("--helper-build-record", required=True, type=Path)
+    prepare_cross.add_argument("--gwyfile-wheel", required=True, type=Path)
+    prepare_cross.add_argument("--created-at", default="2026-07-26T08:00:00Z")
+    prepare_cross.add_argument("--predeclared-at", default="2026-07-26T08:01:00Z")
+    prepare_cross.add_argument("--generator-commit")
+    prepare_cross.add_argument(
+        "--sut-commit", default="11daf8879c9e3e098ce844778592525d4f2bdc53"
+    )
+    prepare_cross.add_argument("--sut-version", default="0.1.5.dev0")
+    prepare_cross.add_argument("--json", action="store_true", dest="json_output")
+
     execute = campaign_operations.add_parser(
         "execute", help="run a verified frozen protocol against a SUT wheel"
     )
@@ -138,6 +162,27 @@ def _build_parser() -> argparse.ArgumentParser:
     execute_cumulative.add_argument("--software-timeout-seconds", type=float, default=120.0)
     execute_cumulative.add_argument("--scientific-timeout-seconds", type=float, default=60.0)
     execute_cumulative.add_argument("--json", action="store_true", dest="json_output")
+
+    execute_cross = campaign_operations.add_parser(
+        "execute-gwyddion-cross-validation",
+        help="run software, six SPM-Kit and six external Gwyddion-library runs",
+    )
+    execute_cross.add_argument(
+        "protocol_bundle", metavar="PROTOCOL_BUNDLE.json", type=Path
+    )
+    execute_cross.add_argument(
+        "freeze_receipt", metavar="FREEZE_RECEIPT.json", type=Path
+    )
+    execute_cross.add_argument("--artifact-root", required=True, type=Path)
+    execute_cross.add_argument("--sut-wheel", required=True, type=Path)
+    execute_cross.add_argument("--gwyddion-command", required=True, type=Path)
+    execute_cross.add_argument("--gwyddion-library-dir", required=True, type=Path)
+    execute_cross.add_argument("--gwyddion-module-dir", required=True, type=Path)
+    execute_cross.add_argument("--output-dir", required=True, type=Path)
+    execute_cross.add_argument("--software-timeout-seconds", type=float, default=120.0)
+    execute_cross.add_argument("--scientific-timeout-seconds", type=float, default=60.0)
+    execute_cross.add_argument("--reference-timeout-seconds", type=float, default=60.0)
+    execute_cross.add_argument("--json", action="store_true", dest="json_output")
 
     result = campaign_operations.add_parser(
         "verify-result", help="verify result receipt, protocol continuity and artifacts"
@@ -399,6 +444,59 @@ def _command_prepare_cumulative(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def _command_prepare_gwyddion_cross(args: argparse.Namespace) -> int:
+    try:
+        prepared = prepare_gwyddion_cross_validation_campaign(
+            args.output_dir,
+            sut_repository=args.sut_repository,
+            gwyddion_identity=args.gwyddion_identity,
+            installed_viability=args.installed_viability,
+            helper_source=args.helper_source,
+            helper_binary=args.helper_binary,
+            helper_build_record=args.helper_build_record,
+            gwyfile_wheel=args.gwyfile_wheel,
+            created_at=args.created_at,
+            predeclared_at=args.predeclared_at,
+            generator_commit=args.generator_commit,
+            sut_commit=args.sut_commit,
+            sut_version=args.sut_version,
+        )
+    except (CampaignExecutionError, ValidationBundleError, OSError) as exc:
+        error = (
+            exc
+            if isinstance(exc, (CampaignExecutionError, ValidationBundleError))
+            else CampaignExecutionError(
+                [
+                    execution_issue(
+                        CampaignExecutionIssueCategory.FILESYSTEM,
+                        "GWYDDION_PROTOCOL.PREPARE_FAILED",
+                        "/output_dir",
+                        str(exc),
+                    )
+                ]
+            )
+        )
+        _emit_expected_error(
+            "campaign.prepare-gwyddion-cross-validation",
+            error,
+            json_output=args.json_output,
+        )
+        if isinstance(error, CampaignExecutionError):
+            return _campaign_error_exit(error)
+        return EXIT_INVALID
+    payload = {
+        "operation": "campaign.prepare-gwyddion-cross-validation",
+        **prepared.to_dict(),
+        "status": "DRAFT_PREPARED",
+    }
+    _emit(
+        payload,
+        json_output=args.json_output,
+        human=f"DRAFT_PREPARED campaign_id={payload['campaign_id']} cases=7",
+    )
+    return EXIT_PASS
+
+
 def _ground_truth_document(protocol: dict[str, Any], artifact_root: Path) -> dict[str, Any]:
     artifact = next(
         item
@@ -587,6 +685,111 @@ def _command_execute_cumulative(args: argparse.Namespace) -> int:
     return EXIT_EXECUTION if failed else EXIT_PASS
 
 
+def _command_execute_gwyddion_cross(args: argparse.Namespace) -> int:
+    try:
+        execution = execute_gwyddion_cross_validation_campaign(
+            args.protocol_bundle,
+            args.freeze_receipt,
+            artifact_root=args.artifact_root,
+            sut_wheel=args.sut_wheel,
+            gwyddion_command=args.gwyddion_command,
+            gwyddion_library_dir=args.gwyddion_library_dir,
+            gwyddion_module_dir=args.gwyddion_module_dir,
+            output_dir=args.output_dir,
+            software_timeout_seconds=args.software_timeout_seconds,
+            scientific_timeout_seconds=args.scientific_timeout_seconds,
+            reference_timeout_seconds=args.reference_timeout_seconds,
+        )
+        protocol = load_validation_bundle(args.protocol_bundle)
+        truth = _ground_truth_document(protocol, args.artifact_root)
+        result_bundle = populate_gwyddion_cross_validation_result_bundle(
+            protocol, execution, truth
+        )
+        published = write_execution_receipt(
+            result_bundle,
+            frozen_protocol_path=args.protocol_bundle,
+            freeze_receipt_path=args.freeze_receipt,
+            artifact_root=args.artifact_root,
+            output_dir=args.output_dir / "result-snapshot",
+            wheel_sha256=execution.wheel_sha256,
+            started_at=execution.started_at,
+            completed_at=execution.completed_at,
+        )
+    except (
+        CampaignExecutionError,
+        LifecycleError,
+        ValidationBundleError,
+        ValueError,
+        OSError,
+    ) as exc:
+        error = (
+            exc
+            if isinstance(exc, (CampaignExecutionError, LifecycleError, ValidationBundleError))
+            else CampaignExecutionError(
+                [
+                    execution_issue(
+                        CampaignExecutionIssueCategory.EXECUTION,
+                        "GWYDDION_CROSS.EXECUTION_FAILED",
+                        "",
+                        str(exc),
+                    )
+                ]
+            )
+        )
+        _emit_expected_error(
+            "campaign.execute-gwyddion-cross-validation",
+            error,
+            json_output=args.json_output,
+        )
+        if isinstance(error, CampaignExecutionError):
+            return _campaign_error_exit(error)
+        if isinstance(error, LifecycleError):
+            return _lifecycle_error_exit(error)
+        return EXIT_INVALID
+    cross = [
+        item
+        for item in result_bundle["comparisons"]
+        if item["comparison_id"].startswith("comparison.cross.gwyddion.")
+    ]
+    outcomes = {
+        name: sum(item["outcome"] == name for item in cross)
+        for name in ("PASS", "FAIL", "ERROR", "INCONCLUSIVE", "NOT_EVALUATED")
+    }
+    payload = {
+        "operation": "campaign.execute-gwyddion-cross-validation",
+        "status": "RESULT_PUBLISHED",
+        "campaign_id": result_bundle["campaign"]["campaign_id"],
+        "wheel_sha256": execution.wheel_sha256,
+        "helper_sha256": execution.external_reference.helper_sha256,
+        "result_bundle_sha256": published.result_bundle_sha256,
+        "execution_receipt_sha256": published.execution_receipt_sha256,
+        "software_test": execution.software_test.run["execution_status"],
+        "spmkit_runs": len(execution.spmkit.runs),
+        "external_reference_runs": len(execution.external_reference.runs),
+        "cross_comparisons": outcomes,
+        "claims": [
+            {
+                "claim_id": item["claim_id"],
+                "level": item["level"],
+                "status": item["status"],
+            }
+            for item in result_bundle["claims"]
+        ],
+    }
+    _emit(
+        payload,
+        json_output=args.json_output,
+        human=(
+            f"RESULT_PUBLISHED sha256={published.result_bundle_sha256} "
+            f"spmkit=6 external=6 cross_pass={outcomes['PASS']}"
+        ),
+    )
+    failed = any(item["execution_status"] != "COMPLETED" for item in execution.runs) or any(
+        outcomes[name] for name in ("FAIL", "ERROR", "INCONCLUSIVE", "NOT_EVALUATED")
+    )
+    return EXIT_EXECUTION if failed else EXIT_PASS
+
+
 def _command_verify_result(args: argparse.Namespace) -> int:
     result = verify_result_snapshot(
         args.result_bundle,
@@ -628,9 +831,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "campaign" and args.campaign_command is not None:
         campaign_handlers = {
             "prepare-cumulative-verification": _command_prepare_cumulative,
+            "prepare-gwyddion-cross-validation": _command_prepare_gwyddion_cross,
             "prepare-synthetic-roughness": _command_prepare_campaign,
             "execute": _command_execute_campaign,
             "execute-cumulative": _command_execute_cumulative,
+            "execute-gwyddion-cross-validation": _command_execute_gwyddion_cross,
             "verify-result": _command_verify_result,
         }
         return campaign_handlers[args.campaign_command](args)

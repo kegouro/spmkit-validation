@@ -42,7 +42,8 @@ las pruebas de tampering. No usa datos instrumentales ni declara LEVEL 3+.
 
 ## Cumulative software and numerical workflow
 
-El paquete `0.1.3` añade un protocolo nuevo con una suite de software exportada
+El paquete `0.1.4` añade cross-validation headless contra bibliotecas Gwyddion y conserva
+el protocolo acumulativo `0.1.3` con una suite de software exportada
 por identidad Git y los seis casos sintéticos:
 
 ```bash

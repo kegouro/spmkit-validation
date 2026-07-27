@@ -27,7 +27,11 @@ from .issues import (
     CampaignExecutionIssueCategory,
     execution_issue,
 )
-from .receipt import ExecutionReceipt, validate_execution_receipt
+from .receipt import (
+    ExecutionReceipt,
+    _external_reference_summary,
+    validate_execution_receipt,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,6 +93,7 @@ def _metadata_issues(
     bundle: Mapping[str, Any],
     frozen_raw: bytes,
     freeze_receipt_raw: bytes,
+    artifact_root: str | Path,
 ) -> list[CampaignExecutionIssue]:
     issues: list[CampaignExecutionIssue] = []
     expected = {
@@ -175,6 +180,25 @@ def _metadata_issues(
                     "RESULT_RECEIPT.SOFTWARE_VERIFICATION_MISMATCH",
                     "/software_verification",
                     "receipt software verification hashes or run IDs contradict the result bundle",
+                )
+            )
+    try:
+        expected_external = _external_reference_summary(bundle, artifact_root)
+    except Exception as exc:
+        issues.append(
+            _issue(
+                "RESULT_RECEIPT.EXTERNAL_REFERENCE_INVALID",
+                "/external_reference",
+                str(exc),
+            )
+        )
+    else:
+        if dict(receipt.external_reference or {}) != dict(expected_external or {}):
+            issues.append(
+                _issue(
+                    "RESULT_RECEIPT.EXTERNAL_REFERENCE_MISMATCH",
+                    "/external_reference",
+                    "receipt external-reference identity contradicts result artifacts",
                 )
             )
     return issues
@@ -277,7 +301,9 @@ def verify_result_snapshot(
             )
         )
     issues.extend(protocol_continuity_issues(frozen, bundle))
-    issues.extend(_metadata_issues(receipt, bundle, frozen_raw, freeze_receipt_raw))
+    issues.extend(
+        _metadata_issues(receipt, bundle, frozen_raw, freeze_receipt_raw, artifact_root)
+    )
     if issues:
         codes = {issue.code for issue in issues}
         if "RESULT.NONCANONICAL" in codes:

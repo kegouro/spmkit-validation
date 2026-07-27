@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import subprocess
 from collections import Counter
@@ -58,6 +59,7 @@ class ExecutionReceipt:
     limitations: tuple[str, ...]
     receipt_sha256: str
     software_verification: Mapping[str, Any] | None = None
+    external_reference: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         document = {
@@ -86,6 +88,8 @@ class ExecutionReceipt:
         }
         if self.software_verification is not None:
             document["software_verification"] = dict(self.software_verification)
+        if self.external_reference is not None:
+            document["external_reference"] = dict(self.external_reference)
         return document
 
     def canonical_bytes(self) -> bytes:
@@ -122,6 +126,11 @@ class ExecutionReceipt:
             software_verification=(
                 dict(document["software_verification"])
                 if "software_verification" in document
+                else None
+            ),
+            external_reference=(
+                dict(document["external_reference"])
+                if "external_reference" in document
                 else None
             ),
         )
@@ -260,6 +269,48 @@ def _receipt_schema() -> dict[str, Any]:
                 },
                 "additionalProperties": False,
             },
+            "external_reference": {
+                "type": "object",
+                "required": [
+                    "reference_id",
+                    "producer_name",
+                    "producer_is_third_party",
+                    "independence_assessment",
+                    "gwyddion_version",
+                    "gwyddion_executable_sha256",
+                    "gwyddion_identity_record_sha256",
+                    "gwyddion_library_versions",
+                    "helper_source_sha256",
+                    "helper_binary_sha256",
+                    "independence_assessment_sha256",
+                    "external_run_ids",
+                    "external_comparison_count",
+                ],
+                "properties": {
+                    "reference_id": {"type": "string", "minLength": 1},
+                    "producer_name": {"type": "string", "minLength": 1},
+                    "producer_is_third_party": {"const": True},
+                    "independence_assessment": {"const": "INDEPENDENT"},
+                    "gwyddion_version": {"type": "string", "minLength": 1},
+                    "gwyddion_executable_sha256": sha,
+                    "gwyddion_identity_record_sha256": sha,
+                    "gwyddion_library_versions": {
+                        "type": "object",
+                        "additionalProperties": {"type": "string", "minLength": 1},
+                    },
+                    "helper_source_sha256": sha,
+                    "helper_binary_sha256": sha,
+                    "independence_assessment_sha256": sha,
+                    "external_run_ids": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": True,
+                        "items": {"type": "string", "minLength": 1},
+                    },
+                    "external_comparison_count": {"type": "integer", "minimum": 1},
+                },
+                "additionalProperties": False,
+            },
         },
         "additionalProperties": False,
     }
@@ -340,6 +391,78 @@ def _summary(results: Sequence[Any]) -> dict[str, int]:
         "failed": sum(result.status == "FAIL" for result in results),
         "remote_not_verified": sum(
             result.status == "REMOTE_ARTIFACT_NOT_VERIFIED" for result in results
+        ),
+    }
+
+
+def _external_reference_summary(
+    bundle: Mapping[str, Any], artifact_root: str | Path
+) -> dict[str, Any] | None:
+    references = [
+        item
+        for item in bundle.get("references", [])
+        if item.get("reference_type") == "EXTERNAL_SOFTWARE_REFERENCE"
+        and item.get("producer", {}).get("is_third_party") is True
+    ]
+    external_runs = [
+        item["run_id"]
+        for item in bundle.get("runs", [])
+        if item.get("run_id", "").startswith("run.gwyddion.")
+    ]
+    if not references or not external_runs:
+        return None
+    reference = references[0]
+    artifacts = {item["artifact_id"]: item for item in bundle.get("evidence", [])}
+    required = {
+        "identity": "artifact.reference.gwyddion-identity",
+        "source": "artifact.reference.helper-source",
+        "binary": "artifact.reference.helper-binary",
+        "independence": "artifact.reference.independence-assessment",
+    }
+    if any(artifact_id not in artifacts for artifact_id in required.values()):
+        raise CampaignExecutionError(
+            [
+                execution_issue(
+                    CampaignExecutionIssueCategory.RECEIPT,
+                    "EXECUTION_RECEIPT.EXTERNAL_EVIDENCE_MISSING",
+                    "/evidence",
+                    "external receipt requires identity, helper and independence artifacts",
+                )
+            ]
+        )
+    identity_artifact = artifacts[required["identity"]]
+    identity_path = Path(artifact_root) / identity_artifact["relative_uri"]
+    try:
+        identity = json.loads(identity_path.read_bytes())
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise CampaignExecutionError(
+            [
+                execution_issue(
+                    CampaignExecutionIssueCategory.RECEIPT,
+                    "EXECUTION_RECEIPT.EXTERNAL_IDENTITY_INVALID",
+                    "/evidence",
+                    str(exc),
+                )
+            ]
+        ) from exc
+    return {
+        "reference_id": reference["reference_id"],
+        "producer_name": reference["producer"]["name"],
+        "producer_is_third_party": reference["producer"]["is_third_party"],
+        "independence_assessment": reference["independence_justification"][
+            "independence_assessment"
+        ],
+        "gwyddion_version": reference["version"],
+        "gwyddion_executable_sha256": identity["executable"]["sha256"],
+        "gwyddion_identity_record_sha256": identity_artifact["sha256"],
+        "gwyddion_library_versions": dict(identity["libraries"]),
+        "helper_source_sha256": artifacts[required["source"]]["sha256"],
+        "helper_binary_sha256": artifacts[required["binary"]]["sha256"],
+        "independence_assessment_sha256": artifacts[required["independence"]]["sha256"],
+        "external_run_ids": external_runs,
+        "external_comparison_count": sum(
+            item.get("comparison_id", "").startswith("comparison.cross.gwyddion.")
+            for item in bundle.get("comparisons", [])
         ),
     }
 
@@ -461,6 +584,9 @@ def write_execution_receipt(
                 if run.get("run_type") == "VALIDATION"
             ],
         }
+    external_reference = _external_reference_summary(result_bundle, artifact_root)
+    if external_reference is not None:
+        receipt_document["external_reference"] = external_reference
     receipt_document["receipt_sha256"] = _payload_sha256(receipt_document)
     receipt = ExecutionReceipt.from_dict(receipt_document)
     receipt_bytes = receipt.canonical_bytes()
