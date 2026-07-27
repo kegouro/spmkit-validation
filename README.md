@@ -5,6 +5,11 @@ Este repositorio ejecuta comandos de SPM-Kit por medio de `subprocess` garantiza
 
 ![spmkit-validation banner](docs/images/brand/spmkit-validation-banner.png)
 
+<p align="center">
+  <a href="README.md"><img src="https://img.shields.io/badge/README-Español-blue?style=for-the-badge" alt="Español"></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/README-English-lightgrey?style=for-the-badge" alt="English"></a>
+</p>
+
 ## Qué es la validación externa caja negra
 
 A diferencia de los tests unitarios internos de SPM-Kit, este arnés trata a SPM-Kit como un sistema bajo prueba (SUT) opaco: lo invoca exclusivamente a través de sus interfaces públicas (CLI, archivos de salida), nunca importa su código Python. Esto garantiza que la evidencia refleje el comportamiento real que un usuario externo obtendría, no caminos internos de prueba.
