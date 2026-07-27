@@ -18,7 +18,7 @@ def _machine_json(path: Path) -> dict:
 def _fake_gwyddion(directory: Path) -> Path:
     executable = directory / "gwyddion"
     executable.write_text(
-        f"""#!{sys.executable}
+        """#!/usr/bin/env python3
 import sys
 
 if sys.argv[1:] == [\"--version\"]:
