@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this validation harness in research, please cite it."
+title: "spmkit-validation — external black-box validation harness for SPM-Kit"
+abstract: "External black-box validation harness that runs SPM-Kit via subprocess, preserving reproducible evidence with frozen tolerances, receipts and canonical hashes. Sa, Sq and Sz cross-validated against Gwyddion 2.71 on synthetic surfaces (LEVEL 3)."
+type: software
+authors:
+  - family-names: "Labarca Baeza"
+    given-names: "José"
+    orcid: "https://orcid.org/0009-0006-8890-4048"
+    affiliation: "Universidad Técnica Federico Santa María, Valparaíso, Chile"
+repository-code: "https://github.com/kegouro/spmkit-validation"
+license: MIT
+keywords:
+  - AFM
+  - SPM
+  - validation
+  - cross-validation
+  - Gwyddion
+  - scientific software
+  - black-box testing
+version: 0.1.0
+date-released: "2026-07-11"

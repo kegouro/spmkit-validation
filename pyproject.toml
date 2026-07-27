@@ -7,7 +7,7 @@ name = "spmkit-validation"
 version = "0.1.0"
 description = "Arnés externo de validación para SPM-Kit"
 authors = [
-    { name = "SPM-Kit contributors" },
+    { name = "José Labarca Baeza", email = "jlabarca@usm.cl" },
 ]
 readme = "README.md"
 requires-python = ">=3.10"
