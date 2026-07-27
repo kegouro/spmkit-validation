@@ -19,12 +19,12 @@
     "Sin canal CPD ('CPD'); se omite KPFM."
   ],
   "status": "OK",
-  "duration_seconds": 0.021289495000019087,
+  "duration_seconds": 0.0177834759997495,
   "schema_version": "1.0",
   "spmkit_name": "SPM-Kit",
   "spmkit_version": "0.1.5.dev0",
   "git_commit": null,
-  "timestamp_utc": "2026-07-27T05:26:34.840115+00:00",
+  "timestamp_utc": "2026-07-27T05:29:55.416031+00:00",
   "environment": {
     "python_version": "3.12.13",
     "numpy_version": "2.5.1",
