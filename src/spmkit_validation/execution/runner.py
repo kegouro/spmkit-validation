@@ -357,7 +357,15 @@ def install_sut_wheel_environment(
         venv / "bin" / "spmkit", "EXECUTION.SPMKIT_NOT_INSTALLED", "/sut_wheel"
     )
     installed = subprocess.run(
-        [uv, "pip", "freeze", "--python", str(venv / "bin" / "python")],
+        [
+            str(venv / "bin" / "python"),
+            "-c",
+            (
+                "import importlib.metadata as m; "
+                "print('\\n'.join(sorted({f'{d.metadata[\"Name\"]}=={d.version}' "
+                "for d in m.distributions()})))"
+            ),
+        ],
         check=False,
         capture_output=True,
         text=True,
@@ -369,7 +377,7 @@ def install_sut_wheel_environment(
                     CampaignExecutionIssueCategory.EXECUTION,
                     "EXECUTION.DEPENDENCY_CAPTURE_FAILED",
                     "",
-                    installed.stderr.strip() or "uv pip freeze failed",
+                    installed.stderr.strip() or "installed distribution capture failed",
                 )
             ]
         )
@@ -378,7 +386,7 @@ def install_sut_wheel_environment(
         value = line.strip()
         if not value:
             continue
-        name = value.partition(" @ ")[0]
+        name = value.partition("==")[0]
         dependencies.append(f"spmkit=={sut_version}" if name == "spmkit" else value)
     python_executable = venv / "bin" / "python"
     _safe_regular_file(

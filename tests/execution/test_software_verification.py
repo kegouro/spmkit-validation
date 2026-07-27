@@ -205,8 +205,8 @@ def test_installed_environment_keeps_venv_python_entry_path(
             return subprocess.CompletedProcess(command, 0, "", "")
         if command[1:3] == ["pip", "install"]:
             return subprocess.CompletedProcess(command, 0, "", "")
-        if command[1:3] == ["pip", "freeze"]:
-            return subprocess.CompletedProcess(command, 0, "spmkit @ file:///wheel\n", "")
+        if command[1] == "-c":
+            return subprocess.CompletedProcess(command, 0, "spmkit==0.1.5.dev0\n", "")
         raise AssertionError(command)
 
     monkeypatch.setattr(runner_module.shutil, "which", lambda _name: "/usr/bin/uv")
