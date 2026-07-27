@@ -1,22 +1,21 @@
 """Orquestador de campañas end-to-end para SPM-Kit."""
 
 import argparse
-import json
-import yaml
-import sys
 import os
 import shutil
 from pathlib import Path
-import numpy as np
 
-# Phantoms imports
-from spmkit_phantoms.models import SurfacePhantom
-from spmkit_phantoms.surfaces import flat_surface, inclined_plane, sinusoidal_surface, step_surface
+import numpy as np
+import yaml
 from spmkit_phantoms.corruptions import AdditiveGaussianNoise, LineOffsets, SlowLinearDrift
 from spmkit_phantoms.export import export_observed_bundle
 
+# Phantoms imports
+from spmkit_phantoms.models import SurfacePhantom
+from spmkit_phantoms.surfaces import inclined_plane, sinusoidal_surface, step_surface
+
 # Validation imports
-from spmkit_validation.models import ValidationCase, Status
+from spmkit_validation.models import Status, ValidationCase
 from spmkit_validation.runner import run_case
 
 
@@ -42,9 +41,22 @@ def _create_clean_phantom(model_def: dict) -> SurfacePhantom:
     shape = tuple(p["shape"])
     
     if t == "inclined_plane":
-        return inclined_plane(shape, p["x_size_m"], p["y_size_m"], p.get("slope_x", 0.0), p.get("slope_y", 0.0))
+        return inclined_plane(
+            shape,
+            p["x_size_m"],
+            p["y_size_m"],
+            p.get("slope_x", 0.0),
+            p.get("slope_y", 0.0),
+        )
     elif t == "sinusoidal_surface":
-        return sinusoidal_surface(shape, p["x_size_m"], p["y_size_m"], p["amplitude"], p["period_x"], p["period_y"])
+        return sinusoidal_surface(
+            shape,
+            p["x_size_m"],
+            p["y_size_m"],
+            p["amplitude"],
+            p["period_x"],
+            p["period_y"],
+        )
     elif t == "step_surface":
         return step_surface(shape, p["x_size_m"], p["y_size_m"], p["step_height"])
     else:
@@ -93,11 +105,13 @@ def _compute_ground_truth(clean: SurfacePhantom) -> dict:
     return {"Sa": float(sa), "Sq": float(sq), "Sz": float(sz)}
 
 
-def run_campaign(campaign_path: Path, out_dir: Path, spmkit_bin: Path | None, target: str = "spmkit") -> None:
-    if target == "spmkit":
-        resolved_bin = resolve_spmkit_bin(spmkit_bin)
-    else:
-        resolved_bin = None
+def run_campaign(
+    campaign_path: Path,
+    out_dir: Path,
+    spmkit_bin: Path | None,
+    target: str = "spmkit",
+) -> None:
+    resolved_bin = resolve_spmkit_bin(spmkit_bin) if target == "spmkit" else None
 
     with campaign_path.open() as f:
         campaign = yaml.safe_load(f)
@@ -140,7 +154,13 @@ def run_campaign(campaign_path: Path, out_dir: Path, spmkit_bin: Path | None, ta
                     case_id=case_id,
                     input_path=obs_npz.resolve(),
                     command="analyze",
-                    arguments=["--level", "plane", "--output", str(spmkit_out.resolve()), str(obs_npz.resolve())]
+                    arguments=[
+                        "--level",
+                        "plane",
+                        "--output",
+                        str(spmkit_out.resolve()),
+                        str(obs_npz.resolve()),
+                    ],
                 )
                 
                 # Runner
@@ -159,9 +179,12 @@ def run_campaign(campaign_path: Path, out_dir: Path, spmkit_bin: Path | None, ta
                         with roughness_path.open() as f:
                             reader = csv.reader(f)
                             for row in reader:
-                                if row[0] == "Sa": sa_obs = float(row[1])
-                                elif row[0] == "Sq": sq_obs = float(row[1])
-                                elif row[0] == "Sz": sz_obs = float(row[1])
+                                if row[0] == "Sa":
+                                    sa_obs = float(row[1])
+                                elif row[0] == "Sq":
+                                    sq_obs = float(row[1])
+                                elif row[0] == "Sz":
+                                    sz_obs = float(row[1])
                     
                     # Eval
                     err_sa = sa_obs - gt["Sa"]
@@ -256,7 +279,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("campaign", type=Path)
     parser.add_argument("outdir", type=Path)
-    parser.add_argument("spmkit", type=Path, nargs="?", default=None, help="Ruta explícita al binario de spmkit")
+    parser.add_argument(
+        "spmkit",
+        type=Path,
+        nargs="?",
+        default=None,
+        help="Ruta explícita al binario de spmkit",
+    )
     parser.add_argument("--target", type=str, default="spmkit", choices=["spmkit", "gwyddion"])
     args = parser.parse_args()
     run_campaign(args.campaign, args.outdir, args.spmkit, target=args.target)

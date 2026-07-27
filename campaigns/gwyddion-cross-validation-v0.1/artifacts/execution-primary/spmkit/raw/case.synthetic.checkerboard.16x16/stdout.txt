@@ -1,0 +1,7 @@
+✓ Rugosidad → 
+artifacts/execution-primary/spmkit/raw/case.synthetic.checkerboard.16x16/case.sy
+nthetic.checkerboard.16x16_roughness.csv
+· Sin canal CPD ('CPD'); se omite KPFM.
+✓ Manifiesto → 
+artifacts/execution-primary/spmkit/raw/case.synthetic.checkerboard.16x16/case.sy
+nthetic.checkerboard.16x16_run_manifest.json

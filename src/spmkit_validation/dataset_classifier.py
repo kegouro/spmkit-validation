@@ -34,16 +34,15 @@ import mimetypes
 import os
 import re
 import shutil
-import sqlite3
 import subprocess
 import sys
 import time
 from collections import Counter, defaultdict
+from collections.abc import Iterable, Iterator
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Iterator
-
+from typing import Any
 
 RAW_EXTENSIONS = {
     ".nid", ".nhf", ".gwy", ".spm", ".sur", ".sdf", ".opd", ".opdx",
@@ -340,7 +339,9 @@ def looks_numeric_text(text: str) -> tuple[str, dict[str, Any]]:
         return "no", {}
 
     ratio = numeric_tokens / total_tokens
-    common_width, common_count = consistent_widths.most_common(1)[0] if consistent_widths else (0, 0)
+    common_width, common_count = (
+        consistent_widths.most_common(1)[0] if consistent_widths else (0, 0)
+    )
 
     if ratio >= 0.85 and numeric_rows >= 5 and common_width >= 2:
         likelihood = "high"
@@ -953,7 +954,8 @@ def make_reports(
         "",
         "- **Reader/parser testing** checks whether SPM-Kit can load the file correctly.",
         "- **Algorithm cross-checking** compares derived values under matched preprocessing.",
-        "- **Scientific validation** requires documented units, calibration, processing conventions, provenance, and human review.",
+        "- **Scientific validation** requires documented units, calibration, "
+        "processing conventions, provenance, and human review.",
         "",
         "A high triage score is not a scientific validation claim.",
     ]
@@ -981,7 +983,11 @@ def make_reports(
         ),
         (
             "Ambiguous units",
-            [d for d in datasets if (d.raw_available or d.height_matrix_available) and not d.units_known],
+            [
+                d
+                for d in datasets
+                if (d.raw_available or d.height_matrix_available) and not d.units_known
+            ],
         ),
         (
             "SPM-Kit probe failures",
@@ -1074,7 +1080,8 @@ def make_symlink_views(output: Path, datasets: list[DatasetRecord]) -> None:
             if link.exists() or link.is_symlink():
                 continue
             try:
-                link.symlink_to(Path(dataset.local_path), target_is_directory=Path(dataset.local_path).is_dir())
+                source_path = Path(dataset.local_path)
+                link.symlink_to(source_path, target_is_directory=source_path.is_dir())
             except OSError:
                 # Windows or restricted filesystems may block symlinks.
                 index = destination_dir / "INDEX.txt"

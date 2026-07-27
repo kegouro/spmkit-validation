@@ -36,10 +36,7 @@ def run_case(case: ValidationCase, executable: str, output_dir: Path) -> RunReco
                 timeout=case.timeout_seconds,
             )
         return_code = res.returncode
-        if return_code == 0:
-            status = Status.PASS
-        else:
-            status = Status.FAIL
+        status = Status.PASS if return_code == 0 else Status.FAIL
     except subprocess.TimeoutExpired:
         status = Status.TIMEOUT
         error = "TimeoutExpired"

@@ -1,0 +1,1 @@
+{"analyze_command_present":true,"command":["spmkit","--help"],"exit_code":0,"probe_version":"0.1.0","status":"PASS","stderr_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","stdout_sha256":"7c682179018816724897c2e161086076a4ccc6ac4ca5d64b90d72210f5d33067"}

@@ -1,0 +1,34 @@
+{
+  "cases": [
+    "version",
+    "help",
+    "missing-input",
+    "unknown-format",
+    "strict-json",
+    "locale-control",
+    "flat-16x16",
+    "flat-32x32",
+    "checkerboard-16x16",
+    "checkerboard-32x32",
+    "four-level-16x16",
+    "four-level-32x32",
+    "ambiguous-channel",
+    "unit-metadata",
+    "no-display",
+    "exit-codes",
+    "stdout-stderr-separation",
+    "nan-rejection",
+    "input-hash",
+    "source-binary-identity"
+  ],
+  "failed": 0,
+  "passed": 23,
+  "status": "PASS",
+  "test_command": [
+    "pytest",
+    "-q",
+    "tests/adapters/gwyddion/test_reference_format.py",
+    "tests/adapters/gwyddion/test_reference_helper.py"
+  ],
+  "total": 23
+}

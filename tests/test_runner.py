@@ -3,8 +3,9 @@
 import sys
 from pathlib import Path
 
-from spmkit_validation.models import ValidationCase, Status
+from spmkit_validation.models import Status, ValidationCase
 from spmkit_validation.runner import run_case
+
 
 def test_runner_success(tmp_path: Path):
     case = ValidationCase(

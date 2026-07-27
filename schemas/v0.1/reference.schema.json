@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:spmkit-validation:schema:v0.1:reference",
+  "title": "Independent reference v0.1",
+  "$defs": {
+    "reference": {
+      "type": "object",
+      "required": [
+        "reference_id",
+        "reference_type",
+        "name",
+        "version",
+        "producer",
+        "method",
+        "independence_justification",
+        "shared_dependencies",
+        "known_limitations",
+        "evidence_ids"
+      ],
+      "properties": {
+        "reference_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "reference_type": {
+          "enum": [
+            "ANALYTICAL_REFERENCE",
+            "INDEPENDENT_IMPLEMENTATION",
+            "EXTERNAL_SOFTWARE_REFERENCE",
+            "PHYSICAL_REFERENCE_ARTIFACT",
+            "INDEPENDENT_LAB_REPRODUCTION"
+          ]
+        },
+        "name": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "version": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "producer": {
+          "type": "object",
+          "required": ["name", "is_third_party"],
+          "properties": {
+            "name": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "organization": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "is_third_party": {
+              "type": "boolean"
+            },
+            "operator_ids": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+            }
+          },
+          "additionalProperties": false
+        },
+        "method": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "independence_justification": {
+          "type": "object",
+          "required": [
+            "rationale",
+            "shared_algorithms",
+            "shared_formulas",
+            "shared_libraries",
+            "shared_datasets",
+            "shared_authors",
+            "circularity_risks",
+            "independence_assessment"
+          ],
+          "properties": {
+            "rationale": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "shared_algorithms": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "shared_formulas": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "shared_libraries": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "shared_datasets": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+            },
+            "shared_authors": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "circularity_risks": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "independence_assessment": {
+              "enum": ["INDEPENDENT", "PARTIALLY_INDEPENDENT", "NOT_INDEPENDENT"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "shared_dependencies": {
+          "type": "object",
+          "required": ["software", "data", "methods", "notes"],
+          "properties": {
+            "software": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "methods": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "known_limitations": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/limitations"
+        },
+        "evidence_ids": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "reference_type": {
+                "enum": ["PHYSICAL_REFERENCE_ARTIFACT", "INDEPENDENT_LAB_REPRODUCTION"]
+              }
+            },
+            "required": ["reference_type"]
+          },
+          "then": {
+            "properties": {
+              "evidence_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}
