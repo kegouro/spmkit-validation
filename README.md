@@ -3,6 +3,8 @@
 Arnés externo para validación de SPM-Kit.
 Este repositorio ejecuta comandos de SPM-Kit por medio de `subprocess` garantizando aislamiento, evitando el uso de API interna y probando el sistema como una caja negra.
 
+![spmkit-validation banner](docs/images/brand/spmkit-validation-banner.png)
+
 ## Milestone Nanoscope SPM v0.1
 
 La campaña [Nanoscope SPM external confirmation v0.1](docs/campaigns/nanoscope_spm_parser_pilot_v0.1_audit.md)
