@@ -1,0 +1,61 @@
+{
+  "attempt_id": "phase01e.install-and-resume.001",
+  "commands": [
+    {
+      "command": ["yay", "-G", "gwyddion-no-python2"],
+      "outcome": "METADATA_AND_PKGBUILD_INSPECTED"
+    },
+    {
+      "command": ["yay", "-G", "gwyddion"],
+      "outcome": "METADATA_AND_PKGBUILD_INSPECTED"
+    },
+    {
+      "command": ["yay", "-S", "--needed", "gwyddion-no-python2"],
+      "outcome": "STOPPED_AT_INTERACTIVE_SUDO_PASSWORD_NO_SYSTEM_CHANGE"
+    },
+    {
+      "command": ["configure", "make", "make install"],
+      "outcome": "INSTALLED_TO_ISOLATED_USER_PREFIX"
+    }
+  ],
+  "fallback": {
+    "configure_flags": [
+      "--with-python=no",
+      "--enable-pygwy=no",
+      "--with-perl=no",
+      "--with-ruby=no",
+      "--with-gl=no",
+      "--with-gtksourceview=no",
+      "--with-unique=no",
+      "--with-kde4-thumbnailer=no",
+      "--with-zip=minizip1",
+      "--disable-gtk-doc",
+      "--disable-static",
+      "--enable-module-bundling",
+      "--disable-desktop-file-update"
+    ],
+    "gwyddion_tar_sha256": "2df721befccbe4d5ee2ba564b32e69341f8ce1de637e2045838a09a2d46b5dba",
+    "gwyddion_version": "2.71",
+    "install_scope": "ISOLATED_USER_PREFIX",
+    "source": "https://sourceforge.net/projects/gwyddion/files/gwyddion/2.71/gwyddion-2.71.tar.xz"
+  },
+  "package_candidates": [
+    {
+      "aur_git_commit": "62fc5e0f7d8530b986cf60e4e73033563cc68bb3",
+      "name": "gwyddion-no-python2",
+      "pkgbuild_sha256": "d6045ce27922e8907b6470fa5fbc56bcf8bb8988205055945378967d1755005e",
+      "selected": true,
+      "version": "2.71-1"
+    },
+    {
+      "name": "gwyddion",
+      "selected": false,
+      "version": "2.71-2"
+    }
+  ],
+  "repositories_modified": false,
+  "status": "INSTALLED_FROM_VERIFIED_UPSTREAM_RELEASE",
+  "supersedes_blocker": true,
+  "system_packages_removed": false,
+  "system_upgrade_performed": false
+}

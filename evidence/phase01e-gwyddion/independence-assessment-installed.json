@@ -1,0 +1,43 @@
+{
+  "assessment": "INDEPENDENT",
+  "attempt_id": "phase01e.install-and-resume.001",
+  "authors_shared": [],
+  "circularity_risks": [
+    "The validation harness authors the execution wrapper and predeclares the shared formulas.",
+    "Sa is accumulated by the wrapper over values exposed by GwyDataField; mean, Sq, min and max use public Gwyddion operations.",
+    "The same frozen synthetic inputs are necessarily shared between SPM-Kit and the external reference."
+  ],
+  "code_shared_with_harness": false,
+  "code_shared_with_spmkit": false,
+  "datasets_shared": ["the six frozen synthetic GWY inputs"],
+  "evidence_ids": [
+    "artifact.reference.gwyddion-identity",
+    "artifact.reference.helper-source",
+    "artifact.reference.helper-binary",
+    "artifact.reference.installed-viability"
+  ],
+  "execution_method": "Separate headless native process dynamically linked to Gwyddion 2.71 public libraries",
+  "execution_wrapper_author": "SPMKit validation harness",
+  "formula_definition_shared": true,
+  "formulas_shared": [
+    "mean=average(z)",
+    "Sa=average(abs(z-mean))",
+    "Sq=sqrt(average((z-mean)^2))",
+    "Sz=max(z)-min(z)"
+  ],
+  "gwyddion_version": "2.71",
+  "libraries_shared": ["system IEEE-754 binary64 arithmetic"],
+  "limitations": [
+    "This is a Gwyddion-library external reference, not a Gwyddion GUI result.",
+    "The harness-owned wrapper implements the declared Sa accumulation over Gwyddion-loaded values.",
+    "Shared mathematical definitions and frozen inputs do not establish physical validation."
+  ],
+  "producer_is_third_party": true,
+  "producer_name": "Gwyddion project",
+  "producer_organization": "Gwyddion upstream project",
+  "reference_implementation_shared": false,
+  "scientific_code_shared_with_sut": false,
+  "standards_shared": ["Sa, Sq and Sz mathematical definitions", "SI metre"],
+  "tolerances_derived_from_observed_cross_differences": false,
+  "wrapper_code_shared_with_sut": false
+}

@@ -1,0 +1,34 @@
+{
+  "acquisition_source": "Gwyddion upstream stable release tarball",
+  "attempt_id": "phase01e.install-and-resume.001",
+  "capabilities": {
+    "check": "HEADLESS_PASS",
+    "convert_to_gwy": "HEADLESS_PASS",
+    "identify": "HEADLESS_PASS",
+    "public_headers": true,
+    "public_libraries": true,
+    "public_pkg_config": true
+  },
+  "executable": {
+    "path_disclosure": "OMITTED_FROM_VERSIONED_EVIDENCE",
+    "sha256": "41fddd9d37eb95c904d731822919605333bee7632304aa4d5d7af52dd4af5af8",
+    "size_bytes": 210080
+  },
+  "installation": "ISOLATED_USER_PREFIX",
+  "libraries": {
+    "fftw3": "3.3.11",
+    "glib": "2.88.2",
+    "gtk2": "2.24.33",
+    "gtkglext": "1.2.0",
+    "gwyddion": "2.71",
+    "minizip": "1.3.2"
+  },
+  "license": "GPL-2.0-or-later",
+  "package_owner": null,
+  "producer": "Gwyddion project",
+  "producer_is_third_party": true,
+  "reported_version": "2.71",
+  "source_tar_sha256": "2df721befccbe4d5ee2ba564b32e69341f8ce1de637e2045838a09a2d46b5dba",
+  "status": "IDENTITY_CAPTURED",
+  "version_output": "Gwyddion 2.71 (2026-04-14)"
+}

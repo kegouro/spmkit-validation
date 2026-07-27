@@ -1,0 +1,6 @@
+
+(process:296343): GwyModule-WARNING **: 01:19:56.971: Duplicate function bmp, keeping only first
+
+(process:296343): GwyModule-WARNING **: 01:19:56.971: Duplicate function pnm, keeping only first
+
+(process:296343): GwyModule-WARNING **: 01:19:56.971: Duplicate function tga, keeping only first

@@ -1,0 +1,14 @@
+{
+  "derived_files": ["tools/gwyddion-reference/gwyddion_roughness_reference.c"],
+  "helper_version": "0.1.0",
+  "license": "GPL-2.0-or-later",
+  "no_spmkit_import": true,
+  "source_sha256": "d6273e01775dac97f253194ed768f6ebe1994663045b939f3c3ef5c6bf5013e4",
+  "upstream_model": {
+    "files_studied": ["gwybatch.c"],
+    "license": "GPL-2.0-or-later",
+    "source": "https://gwyddion.net/apps/",
+    "tar_sha256": "2f262cc1436e9ba4d964040a2adf8421c7e1bb7211181331d3cb29be6200e0a7"
+  },
+  "wrapper_code_shared_with_sut": false
+}
