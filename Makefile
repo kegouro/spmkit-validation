@@ -1,6 +1,7 @@
-.PHONY: help test check phase01b-gates phase01c-gates phase01d-gates smoke full-campaign report clean
+.PHONY: help test check phase01b-gates phase01c-gates phase01d-gates phase01e-probe smoke full-campaign report clean
 
 PYTHON ?= python
+UV ?= uv
 SPMKIT_BIN ?=
 
 help:
@@ -9,6 +10,7 @@ help:
 	@echo "  make phase01b-gates - Reproduce todos los gates no científicos de PHASE_01B"
 	@echo "  make phase01c-gates - Reproduce la campaña sintética gobernada de PHASE_01C"
 	@echo "  make phase01d-gates - Reproduce la verificación acumulativa de PHASE_01D"
+	@echo "  make phase01e-probe - Reproduce el probe/bloqueo de referencia Gwyddion"
 	@echo "  make smoke          - Ejecuta la campaña sintética rápida (CI)"
 	@echo "  make full-campaign  - Ejecuta la campaña completa (Requiere SPM-Kit bin local)"
 	@echo "  make report         - Genera el reporte de una campaña"
@@ -25,6 +27,10 @@ phase01c-gates:
 
 phase01d-gates:
 	bash scripts/run_phase01d_gates.sh
+
+phase01e-probe:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src "$(UV)" run --frozen --python 3.12 python -m pytest -q tests/adapters/gwyddion/test_viability.py tests/adapters/gwyddion/test_independence_semantics.py
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src "$(UV)" run --frozen --python 3.12 python -m spmkit_validation.adapters.gwyddion.viability --output-dir evidence/phase01e-gwyddion --observed-at 2026-07-26T12:00:00Z --json
 
 smoke:
 	@echo "Ejecutando Smoke Campaign..."
