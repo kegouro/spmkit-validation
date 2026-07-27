@@ -212,6 +212,33 @@ def run_installed_viability_probe(
                 "artifacts/installed-viability-input.gwy",
             ],
         ),
+        "helper_roundtrip": _invoke(
+            [
+                str(helper),
+                "--channel",
+                "0",
+                "--module-dir",
+                str(module_dir),
+                "--unit-z",
+                "m",
+                str(converted_path),
+            ],
+            executable=helper,
+            library_dir=library_dir,
+            output=output,
+            label="helper-roundtrip",
+            timeout_seconds=timeout_seconds,
+            recorded_command=[
+                "spmkit-gwyddion-roughness-reference",
+                "--channel",
+                "0",
+                "--module-dir",
+                "<gwyddion-module-dir>",
+                "--unit-z",
+                "m",
+                "artifacts/installed-viability-roundtrip.gwy",
+            ],
+        ),
     }
     invocation_pass = all(
         item["exit_code"] == 0 and item["timed_out"] is False
@@ -237,6 +264,8 @@ def run_installed_viability_probe(
         for name, expected in analytical.items()
     )
     converted_exists = converted_path.is_file()
+    roundtrip_values_match = False
+    roundtrip_max_difference: float | None = None
     roundtrip_record: dict[str, Any] = {
         "bound_m": 1e-22,
         "input_sha256": input_sha256,
@@ -245,13 +274,31 @@ def run_installed_viability_probe(
         "writer": "gwyfile",
         "writer_version": "0.3.0",
         "gwyddion_conversion_completed": converted_exists,
+        "converted_byte_identity_required": False,
     }
     if converted_exists:
         converted_sha256, converted_size = _hash(converted_path)
-        roundtrip_record.update(
-            {"converted_sha256": converted_sha256, "converted_size_bytes": converted_size}
+        roundtrip_stdout = output / invocations["helper_roundtrip"]["stdout_artifact"]
+        roundtrip_document = validate_reference_output(
+            strict_json_object(roundtrip_stdout.read_bytes()),
+            input_sha256=converted_sha256,
+            shape=(rows, columns),
+            unit_z="m",
         )
-    success = invocation_pass and statistics_match and converted_exists
+        roundtrip_max_difference = max(
+            abs(float(roundtrip_document[name]) - float(helper_document[name]))
+            for name in ("mean", "Sa", "Sq", "min", "max", "Sz")
+        )
+        roundtrip_values_match = roundtrip_max_difference <= 1e-22
+        roundtrip_record.update(
+            {
+                "converted_sha256": converted_sha256,
+                "converted_size_bytes": converted_size,
+                "max_absolute_statistic_difference_m": roundtrip_max_difference,
+                "values_within_predeclared_bound": roundtrip_values_match,
+            }
+        )
+    success = invocation_pass and statistics_match and converted_exists and roundtrip_values_match
     questions = [
         {"id": "Q1_OPEN_INPUT_NONINTERACTIVE", "result": "DEMONSTRATED"},
         {"id": "Q2_COMPUTE_SA_SQ_SZ", "result": "DEMONSTRATED"},

@@ -35,11 +35,7 @@ phase01d-gates:
 	bash scripts/run_phase01d_gates.sh
 
 phase01e-probe:
-	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src "$(UV)" run --frozen --python 3.12 python -m pytest -q tests/adapters/gwyddion/test_viability.py tests/adapters/gwyddion/test_independence_semantics.py
-	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src "$(UV)" run --frozen --python 3.12 python -m spmkit_validation.adapters.gwyddion.viability --output-dir evidence/phase01e-gwyddion --observed-at 2026-07-26T12:00:00Z --json
-	"$(MAKE)" -C tools/gwyddion-reference GWYDDION_PREFIX="$(GWYDDION_PREFIX)"
-	SPMKIT_GWYDDION_HELPER="$(abspath $(GWYDDION_HELPER))" SPMKIT_GWYDDION_LIBRARY_DIR="$(GWYDDION_LIBRARY_DIR)" SPMKIT_GWYDDION_MODULE_DIR="$(GWYDDION_MODULE_DIR)" PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src "$(UV)" run --frozen --python 3.12 python -m pytest -q tests/adapters/gwyddion/test_reference_format.py tests/adapters/gwyddion/test_reference_helper.py tests/adapters/gwyddion/test_library_runner.py
-	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src "$(UV)" run --frozen --python 3.12 python -m spmkit_validation.adapters.gwyddion.installed_viability --output-dir evidence/phase01e-gwyddion --gwyddion-executable "$(GWYDDION_EXECUTABLE)" --helper-executable "$(GWYDDION_HELPER)" --gwyddion-library-dir "$(GWYDDION_LIBRARY_DIR)" --gwyddion-module-dir "$(GWYDDION_MODULE_DIR)" --observed-at 2026-07-27T04:00:00Z --json
+	GWYDDION_PREFIX="$(GWYDDION_PREFIX)" GWYDDION_EXECUTABLE="$(GWYDDION_EXECUTABLE)" GWYDDION_LIBRARY_DIR="$(GWYDDION_LIBRARY_DIR)" GWYDDION_MODULE_DIR="$(GWYDDION_MODULE_DIR)" GWYDDION_HELPER="$(abspath $(GWYDDION_HELPER))" UV="$(UV)" bash scripts/run_phase01e_probe.sh
 
 phase01e-gates:
 	bash scripts/run_phase01e_gates.sh
