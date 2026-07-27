@@ -68,6 +68,7 @@ def _invoke(
     output: Path,
     label: str,
     timeout_seconds: float,
+    recorded_command: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     timed_out = False
     try:
@@ -91,7 +92,7 @@ def _invoke(
     _write(stdout_path, stdout)
     _write(stderr_path, stderr)
     return {
-        "argv": [Path(command[0]).name, *command[1:]],
+        "argv": list(recorded_command or [Path(command[0]).name, *command[1:]]),
         "display_environment_present": False,
         "exit_code": exit_code,
         "locale": "C",
@@ -152,6 +153,11 @@ def run_installed_viability_probe(
             output=output,
             label="identify",
             timeout_seconds=timeout_seconds,
+            recorded_command=[
+                "gwyddion",
+                "--identify",
+                "artifacts/installed-viability-input.gwy",
+            ],
         ),
         "check": _invoke(
             [str(gwyddion), "--check", str(input_path)],
@@ -160,6 +166,11 @@ def run_installed_viability_probe(
             output=output,
             label="check",
             timeout_seconds=timeout_seconds,
+            recorded_command=[
+                "gwyddion",
+                "--check",
+                "artifacts/installed-viability-input.gwy",
+            ],
         ),
         "convert": _invoke(
             [str(gwyddion), f"--convert-to-gwy={converted_path}", str(input_path)],
@@ -168,6 +179,11 @@ def run_installed_viability_probe(
             output=output,
             label="convert",
             timeout_seconds=timeout_seconds,
+            recorded_command=[
+                "gwyddion",
+                "--convert-to-gwy=artifacts/installed-viability-roundtrip.gwy",
+                "artifacts/installed-viability-input.gwy",
+            ],
         ),
         "helper": _invoke(
             [
@@ -185,6 +201,16 @@ def run_installed_viability_probe(
             output=output,
             label="helper",
             timeout_seconds=timeout_seconds,
+            recorded_command=[
+                "spmkit-gwyddion-roughness-reference",
+                "--channel",
+                "0",
+                "--module-dir",
+                "<gwyddion-module-dir>",
+                "--unit-z",
+                "m",
+                "artifacts/installed-viability-input.gwy",
+            ],
         ),
     }
     invocation_pass = all(
