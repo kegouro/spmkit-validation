@@ -1,121 +1,166 @@
-# spmkit-validation
+# SPM-Kit Validation
 
-Arnés externo para validación de SPM-Kit.
-Este repositorio ejecuta comandos de SPM-Kit por medio de `subprocess` garantizando aislamiento, evitando el uso de API interna y probando el sistema como una caja negra.
+**An external, process-isolated validation harness and evidence archive for SPM-Kit.**
 
-![spmkit-validation banner](docs/images/brand/spmkit-validation-banner.png)
+**José Labarca Baeza is the creator, author, and lead developer.** This repository
+was developed independently and tests SPM-Kit through public command-line behavior
+and retained artifacts; it does not import SPM-Kit internals to establish results.
 
-<p align="center">
-  <a href="README.md"><img src="https://img.shields.io/badge/README-Español-blue?style=for-the-badge" alt="Español"></a>
-  <a href="README.en.md"><img src="https://img.shields.io/badge/README-English-lightgrey?style=for-the-badge" alt="English"></a>
-</p>
+[![CI](https://github.com/kegouro/spmkit-validation/actions/workflows/ci.yml/badge.svg)](https://github.com/kegouro/spmkit-validation/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab)](pyproject.toml)
+[![License](https://img.shields.io/badge/license-MIT-0f766e)](LICENSE)
 
-## Qué es la validación externa caja negra
+[English](README.md) · [Español](README.es.md) · [Campaign matrix](docs/CAMPAIGNS.md) · [Contributing](CONTRIBUTING.md)
 
-A diferencia de los tests unitarios internos de SPM-Kit, este arnés trata a SPM-Kit como un sistema bajo prueba (SUT) opaco: lo invoca exclusivamente a través de sus interfaces públicas (CLI, archivos de salida), nunca importa su código Python. Esto garantiza que la evidencia refleje el comportamiento real que un usuario externo obtendría, no caminos internos de prueba.
+## Why an external harness?
 
-El proceso es aislamiento a nivel de proceso: cada ejecución de SPM-Kit ocurre en un `subprocess` separado, con sus propios flujos de stdout/stderr y código de salida. Los resultados se preservan con hashes, manifest de archivos y receipts congelados.
+Internal tests are necessary, but they can share implementation details with
+the code under test. The generic runner here constructs an argument vector,
+invokes an installed `spmkit` executable with `subprocess.run`, captures
+stdout/stderr and the exit code, and verifies declared output artifacts.
 
-## Ecosistema
+Campaign generation and reference materialization may use Phantoms or dedicated
+reference adapters in the harness process. SPM-Kit itself remains on the
+process boundary. Evidence created by older or specialized campaign code is
+identified by its pinned commit, protocol, lock, and summary rather than being
+presented as if every path used the current generic CLI.
 
-SPM-Kit Validation es parte del ecosistema SPM-Kit:
+## Current evidence
 
-| Repositorio | Función |
-|---|---|
-| **[spmkit](https://github.com/kegouro/spmkit)** | Motor numérico, API Python, CLI y *workspace* gráfico (Fathom) — el sistema bajo prueba |
-| **[spmkit-validation](https://github.com/kegouro/spmkit-validation)** (este repo) | Arnés externo de validación caja negra |
-| **[spmkit-phantoms](https://github.com/kegouro/spmkit-phantoms)** | Superficies sintéticas deterministas con *ground truth* conocido que alimentan las campañas |
-| **[spmkit-data-hunter](https://github.com/kegouro/spmkit-data-hunter)** | Descubrimiento y triaje de datasets públicos AFM/SPM |
+The table is generated from committed protocol, lock, design, result, and
+summary files. See [docs/CAMPAIGNS.md](docs/CAMPAIGNS.md) for all fields and links.
 
-> **Find the evidence → define the truth → test the system externally → preserve the result.**
+| Campaign | SPM-Kit / reference | Data and metrics | Cases / outcome | Maturity | Reproduction and limitation |
+|---|---|---|---|---|---|
+| `gwyddion-roughness-48-v0.1` | SPM-Kit `5a704d6`; Gwyddion 2.71 | 48 canonical float32 matrices; Sa, Sq, Sz; no preprocessing | 48 cases, 144/144 within tolerance | `LEVEL 3 — CROSS_VALIDATED` | Evidence preserved; not physical validation or universal equivalence |
+| `real-data-roughness-pilot-v0.1` | SPM-Kit `5a704d6`; Gwyddion 2.71 | 12 public experimental GWY records; Sa, Sq, Sz | 36/36 shared-matrix comparisons; 10 parser equivalences, 2 differences | `LEVEL 3` for the shared-matrix track | Parser and end-to-end tracks are observational; real data are not ground truth |
+| `nanoscope-spm-parser-pilot-v0.1` | Limited SPM-Kit reader; Gwyddion 2.71 | Six demonstrated Nanoscope III files; matrices and Sa/Sq/Sz | 18/18 metrics within tolerance; zero reported pixel delta | `LEVEL 2 — NUMERICALLY_VERIFIED` | `AUDIT_PASS_WITH_LIMITATION`; `ACCIDENTAL_PRE_FREEZE_UNBLINDING`; partial, not a blind holdout |
+| `gwyddion-cross-validation-v0.1` release milestone | SPM-Kit 0.1.4 wheel; isolated Gwyddion 2.71 libraries | Six synthetic full-field surfaces; Sa, Sq, Sz | 18/18 within tolerance | `LEVEL 3 — CROSS_VALIDATED` | Published tag; frozen wrapper contains Sa accumulation |
 
-## Campañas
+Because the confirmation records were exposed before the freeze, the Nanoscope audit
+had no `archivos nuevos no observados`; its scope is closed without a blind-holdout claim.
 
-| Campaña | SUT | Referencia | Mensurandos | Tolerancia | Estado | Nivel | Limitaciones |
-|---|---|---|---|---|---|---|---|
-| Synthetic roughness v0.1 | spmkit 0.1.4 (wheel) | Gwyddion 2.71 (librerías) | Sa, Sq, Sz | Congelada en `tolerance-budget.json` | 18/18 PASS | `LEVEL 3 CROSS_VALIDATED` | Solo superficies sintéticas; no validación física; no blind holdout |
-| Nanoscope SPM v0.1 | spmkit (lector `.spm`) | Gwyddion 2.71 | Matrices, Sa/Sq/Sz | Delta píxel = 0.0 nm | 18/18 dentro de tolerancia | `LEVEL 2 NUMERICALLY_VERIFIED` | Soporte `PARTIAL` Nanoscope III; `ACCIDENTAL_PRE_FREEZE_UNBLINDING`; no blind holdout |
-| Gwyddion roughness 48 v0.1 | spmkit | Gwyddion (ruta manual) | Sa | Congelada | Reportado | `LEVEL 1 SOFTWARE_VERIFIED` | Campaña piloto; ruta manual deprecada |
-| Real data roughness pilot v0.1 | spmkit | Gwyddion | Sa | Congelada | Reportado | `LEVEL 1 SOFTWARE_VERIFIED` | Datos reales; no ground truth analítico |
+Committed `smoke_v0.1.yaml` and `image_roughness_v0.1.yaml` are executable
+campaign definitions. Their locally generated outputs are not promoted into
+the evidence matrix unless a versioned result summary is committed.
 
-### Notas científicas
+## Maturity vocabulary
 
-- **Synthetic roughness v0.1** (`LEVEL 3`): la evidencia canónica está publicada en el tag [`gwyddion-cross-validation-v0.1`](https://github.com/kegouro/spmkit-validation/releases/tag/gwyddion-cross-validation-v0.1) (commit `2a3d6c7`). Seis superficies sintéticas `binary64`, 18 comparaciones conformes, 8/8 tests negativos de independencia, 7/7 tests de manipulación. La referencia usa bibliotecas de Gwyddion mediante un wrapper congelado; la acumulación de Sa reside en ese wrapper.
-- **Nanoscope SPM v0.1** (`LEVEL 2`): la confirmación Lancaster fue prerregistrada pero no ciega (`ACCIDENTAL_PRE_FREEZE_UNBLINDING`). No establece validación física ni un blind holdout. Véase la [auditoría final](docs/campaigns/nanoscope_spm_parser_pilot_v0.1_audit.md).
-- Ninguna campaña constituye validación física (`LEVEL 4`), reproducibilidad validada (`LEVEL 5`), autenticidad criptográfica, ni equivalencia general con Gwyddion.
+`LEVEL 0 — CLAIMED` → `LEVEL 1 — SOFTWARE_VERIFIED` →
+`LEVEL 2 — NUMERICALLY_VERIFIED` → `LEVEL 3 — CROSS_VALIDATED` →
+`LEVEL 4 — PHYSICALLY_VALIDATED` → `LEVEL 5 — REPRODUCIBILITY_VALIDATED`.
 
-## Ejecución local
+No campaign in this repository establishes a general `LEVEL 4` or `LEVEL 5`
+claim. A level applies only to its named metric, dataset family, protocol,
+software versions, and tolerance.
 
-El framework requiere que `spmkit` y `spmkit-phantoms` residan en el mismo nivel de directorios:
+## Reproduce the executable harness
 
-```
-parent-directory/
-  spmkit/
-  spmkit-phantoms/
-  spmkit-validation/
+Create sibling checkouts so the smoke campaign can import Phantoms while invoking
+an installed SPM-Kit executable:
+
+```text
+workspace/
+├── spmkit/
+├── spmkit-phantoms/
+└── spmkit-validation/
 ```
 
 ```bash
-pip install -e .                    # instalar el arnés
+cd spmkit-validation
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
+python -m pip install -e ../spmkit-phantoms
+python -m pip install -e ../spmkit
 
-# 1. Tests unitarios del arnés (no requieren SPM-Kit instalado)
-make check
-
-# 2. Smoke campaign (rápida, 6 casos sintéticos de baja resolución)
-make smoke
-
-# 3. Full campaign (30+ casos nativos, requiere binario de SPM-Kit)
-make full-campaign
-
-# 4. Limpiar resultados
-make clean
+python -m pytest tests/ -q
+spmkit-validation --help
 ```
 
-> `make full-campaign` escribe resultados y requiere autorización explícita. No ejecutes la campaña completa sin un entorno controlado.
+Run the six-case smoke definition into an explicit result directory:
 
-## Estructura de evidencia
+```bash
+spmkit-validation campaign campaigns/smoke_v0.1.yaml results/smoke \
+  --spmkit "$(command -v spmkit)"
 
-Cada campaña produce:
+spmkit-validation report \
+  results/smoke/smoke_v0.1/cases.csv \
+  results/smoke/smoke_v0.1
+```
 
-- **Inputs**: superficies sintéticas con hashes canónicos (desde `spmkit-phantoms`).
-- **Artifacts**: stdout/stderr, JSON de salida, CSV de métricas, manifest de ejecución.
-- **Receipts**: hashes de todos los artefactos, identidad del SUT (commit, wheel), timestamp UTC.
-- **Snapshots**: layout content-addressed para preservar reproducibilidad.
+The 30-case definition is intentionally not a default:
 
-La evidencia de la campaña Gwyddion cross-validation está en `evidence/phase01e-gwyddion/` (rama `feat/gwyddion-cross-validation-v0.1`).
+```bash
+spmkit-validation campaign campaigns/image_roughness_v0.1.yaml results/image_roughness \
+  --spmkit "$(command -v spmkit)"
+```
 
-## Qué NO demuestra este repositorio
+Campaign outputs are new scientific artifacts. Review disk location, SPM-Kit
+identity, dependencies, and permissions before running. `make smoke` and
+`make full-campaign` wrap the same definitions.
 
-- No valida física (`LEVEL 4`) ni reproducibilidad independiente (`LEVEL 5`).
-- No constituye un blind holdout (la campaña Nanoscope tuvo `ACCIDENTAL_PRE_FREEZE_UNBLINDING`).
-- No demuestra equivalencia universal con Gwyddion: la referencia usa sus bibliotecas mediante un wrapper congelado, no es una comparación entre herramientas independientes.
-- No valida datos reales con ground truth conocido (los pilotos de datos reales son `LEVEL 1`).
-- No reemplaza los tests unitarios internos de SPM-Kit: los complementa con evidencia externa.
+## Evidence layout
 
-## Contribuir
+| Path | Purpose |
+|---|---|
+| `protocols/` | Frozen scientific contracts and preprocessing rules |
+| `locks/` | Repository commits, software versions, hashes, and execution state |
+| `campaigns/design/` | Ordered case definitions before execution |
+| `evidence/campaigns/` | Result rows, summaries, and retained manifests |
+| `docs/campaigns/` | Human-readable reports, audits, and incident limitations |
+| `evidence/calibration/` | Accepted numerical threshold evidence |
+| `src/spmkit_validation/runner.py` | Generic subprocess boundary |
 
-Las contribuciones son bienvenidas. Áreas donde se busca ayuda concreta:
+Frozen evidence is append-only in practice: do not rewrite inputs, results,
+thresholds, or hashes to make a campaign pass.
 
-- Datasets independientes para validación cruzada
-- Datos ciegos (*blinded validation data*)
-- Fixtures redistribuibles de formatos de archivo
-- Partners de cross-validation
-- Interoperabilidad de lectores
-- Casos de fallo
-- Plataformas adicionales (macOS, Windows)
+## Ecosystem
 
-Antes de abrir un PR, asegúrate de que `make check` pase y de que cualquier nueva evidencia preserve los hashes, receipts y tolerancias congeladas existentes.
+> **Find the evidence → define the truth → test the system externally → preserve the result.**
 
-## Citar
+[Explore the complete ecosystem portal](https://kegouro.github.io/spmkit/ecosystem/)
+for component boundaries, artifact contracts, installation paths, and reproducible
+workflow tutorials.
 
-Si usas este arnés de validación en una publicación, cítalo según [`CITATION.cff`](CITATION.cff).
+- [SPM-Kit / Fathom](https://github.com/kegouro/spmkit) is the system under test.
+- [SPM-Kit Phantoms](https://github.com/kegouro/spmkit-phantoms) provides known synthetic truth.
+- [SPM-Kit Data Hunter](https://github.com/kegouro/spmkit-data-hunter) locates and triages public candidate evidence.
+- This repository freezes contracts, invokes public interfaces, and preserves outcomes.
 
-## Agradecimientos
+The projects are independent open-source work. Comparison or interoperability
+does not imply endorsement by UTFSM, the SPM Lab, AFM-SPM, Gwyddion, AFMReader,
+or TopoStats.
 
-Diseñado y desarrollado independientemente por José Labarca Baeza, estudiante de pregrado de Física en la Universidad Técnica Federico Santa María, en el contexto académico del SPM Lab. Tomás Corrales y el SPM Lab en UTFSM proporcionaron datasets experimentales seleccionados y contexto de laboratorio durante el desarrollo y la evaluación.
+## Contributing
 
-<div align="center">
+Useful contributions include new campaign proposals, independent comparisons,
+redistributable reference datasets, and reproducibility failures. Every proposal
+must declare reference independence, data rights, preprocessing, metrics,
+tolerances, software versions, and known limitations. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-<sub>José Labarca Baeza · Proyecto independiente en el contexto del SPM Lab, UTFSM · Licencia MIT © 2026</sub>
+## Citation
 
-</div>
+Use [CITATION.cff](CITATION.cff). José Labarca Baeza is the software author.
+Dataset and laboratory acknowledgements do not create software co-authorship.
+
+## Acknowledgements
+
+Tomás Corrales and the SPM Lab at Universidad Técnica Federico Santa María provided selected experimental datasets and laboratory context during the development and evaluation of SPM-Kit.
+
+María Saavedra Fredes and Benjamin Schleyer helped locate and share candidate datasets for the validation campaigns.
+
+Candidate datasets still require scientific, legal, and technical review. These
+acknowledgements do not imply that every located dataset was used, accepted,
+redistributable, or scientifically suitable.
+
+## Limits
+
+- no general physical validation or independent reproducibility claim;
+- no blind Nanoscope holdout;
+- no universal equivalence with Gwyddion;
+- proprietary reference environments may remain unavailable;
+- public experimental data do not automatically provide ground truth;
+- frozen campaign evidence covers only the named inputs, metrics, versions, and tolerances.
+
+MIT License © 2026 José Labarca Baeza

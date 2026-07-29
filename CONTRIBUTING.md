@@ -1,38 +1,58 @@
-# Contribuir a spmkit-validation
+# Contributing to SPM-Kit Validation
 
-¡Gracias por tu interés! spmkit-validation es diseñado y desarrollado
-independientemente por José Labarca Baeza, estudiante de pregrado de Física en
-la Universidad Técnica Federico Santa María, en el contexto académico del SPM Lab.
-Recibe contribuciones de la comunidad.
+This repository accepts focused campaign, reference, evidence, and
+reproducibility contributions. José Labarca Baeza is the software creator and
+author; dataset, laboratory, and comparison contributions are acknowledged
+without being converted into software co-authorship.
 
-## Preparar el entorno
-
-```bash
-git clone https://github.com/kegouro/spmkit-validation
-cd spmkit-validation
-pip install -e .
-```
-
-El arnés requiere que `spmkit` y `spmkit-phantoms` residan en el mismo nivel de
-directorio para las campañas de integración.
-
-## Antes de abrir un PR
+## Setup and checks
 
 ```bash
-make check          # tests unitarios del arnés
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
+python -m pytest tests/ -q
 ```
 
-- Preserva los hashes, receipts y tolerancias congeladas existentes.
-- No importes código interno de SPM-Kit: el arnés es caja negra por diseño.
-- Usa superficies sintéticas desde `spmkit-phantoms` para cualquier nueva campaña.
-- Documenta el nivel de evidencia (`LEVEL 0`–`LEVEL 5`) de cualquier resultado nuevo.
+## New campaign proposal
 
-## Áreas donde se busca ayuda
+Declare:
 
-- Datasets independientes para validación cruzada
-- Datos ciegos (*blinded validation data*)
-- Fixtures redistribuibles de formatos de archivo
-- Partners de cross-validation
-- Interoperabilidad de lectores
-- Casos de fallo
-- Plataformas adicionales (macOS, Windows)
+- the SPM-Kit version/commit and public interface under test;
+- the reference software, version, route, and independence classification;
+- data family, case-selection rule, and any holdout exposure;
+- inputs and redistribution rights;
+- preprocessing order, units, metrics, tolerances, and acceptance criteria;
+- expected maturity level and explicit claims that remain out of scope;
+- preservation layout for inputs, outputs, logs, manifests, hashes, and failures.
+
+Freeze the protocol and tolerance before execution. Do not revise them after
+seeing results merely to obtain a pass.
+
+## Reference dataset
+
+Public accessibility is not redistribution permission. Provide the landing page,
+version DOI, license, checksum, file inventory, acquisition context, and whether
+sample identity may remain private. A raw file alone is a parser fixture, not a
+physical or analytical ground truth.
+
+## Independent comparison
+
+Explain how independence was established. A comparison may still be useful when
+the reference shares code, libraries, or a harness-authored wrapper, but that
+relationship must be explicit and the maturity claim narrowed accordingly.
+
+## Reproducibility failure
+
+Include the pinned campaign record, operating system, Python and dependency
+versions, exact command, first divergent artifact/hash, logs with private paths
+removed, and whether the failure is deterministic.
+
+## Pull request rules
+
+- The harness must invoke SPM-Kit through public process interfaces.
+- Frozen evidence is not rewritten; corrections are appended and explained.
+- Failures and inconclusive outcomes remain visible.
+- No restricted file, credential, private path, or laboratory identifier is committed.
+- `python -m pytest tests/ -q` passes.
+- Documentation states the claim boundary and next validation requirement.

@@ -1,0 +1,24 @@
+name: Reproducibility failure
+description: Report a failure to reproduce retained campaign evidence
+title: "[REPRO] "
+labels: ["reproducibility", "bug"]
+body:
+  - type: input
+    id: campaign
+    attributes:
+      label: Campaign, tag, and commit
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Operating system, Python, dependencies, and exact command
+    validations:
+      required: true
+  - type: textarea
+    id: divergence
+    attributes:
+      label: First divergent artifact, hash, output, or status
+      description: Remove credentials, private paths, and restricted data.
+    validations:
+      required: true

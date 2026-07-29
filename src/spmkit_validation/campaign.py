@@ -128,7 +128,7 @@ def run_campaign(campaign_path: Path, out_dir: Path, spmkit_bin: Path | None, ta
             seed_counter += 1
             
             obs = _apply_corruption(clean, corr, rng)
-            export_observed_bundle(obs, case_id, phantoms_dir)
+            export_observed_bundle(obs, case_id, phantoms_dir, rng_seed=seed_counter - 1)
             
             # 3. Lanza spmkit analyze (Nivelado plano, y CSV outputs para sacar los resultados)
             obs_npz = phantoms_dir / case_id / "observed.npz"
@@ -146,22 +146,19 @@ def run_campaign(campaign_path: Path, out_dir: Path, spmkit_bin: Path | None, ta
                 # Runner
                 record = run_case(case, str(resolved_bin), runs_dir)
                 
-                manifest_path = spmkit_out / "observed_run_manifest.json"
-                
-                if manifest_path.exists() and record.status == Status.PASS:
-                    roughness_path = spmkit_out / "observed_roughness.csv"
+                roughness_path = spmkit_out / "observed_roughness.csv"
+
+                if roughness_path.exists() and record.status == Status.PASS:
                     sa_obs = 0.0
                     sq_obs = 0.0
                     sz_obs = 0.0
-                    
-                    if roughness_path.exists():
-                        import csv
-                        with roughness_path.open() as f:
-                            reader = csv.reader(f)
-                            for row in reader:
-                                if row[0] == "Sa": sa_obs = float(row[1])
-                                elif row[0] == "Sq": sq_obs = float(row[1])
-                                elif row[0] == "Sz": sz_obs = float(row[1])
+                    import csv
+                    with roughness_path.open() as f:
+                        reader = csv.reader(f)
+                        for row in reader:
+                            if row[0] == "Sa": sa_obs = float(row[1])
+                            elif row[0] == "Sq": sq_obs = float(row[1])
+                            elif row[0] == "Sz": sz_obs = float(row[1])
                     
                     # Eval
                     err_sa = sa_obs - gt["Sa"]
@@ -182,7 +179,7 @@ def run_campaign(campaign_path: Path, out_dir: Path, spmkit_bin: Path | None, ta
                 else:
                     cases_records.append({
                         "case_id": case_id,
-                        "status": "FAIL_NO_MANIFEST",
+                        "status": "FAIL_NO_ROUGHNESS_OUTPUT",
                         "Sa_gt": gt["Sa"],
                         "Sa_obs": None,
                         "Sa_err": None,

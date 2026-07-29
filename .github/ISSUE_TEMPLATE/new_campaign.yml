@@ -1,0 +1,32 @@
+name: New validation campaign
+description: Propose a frozen campaign contract
+title: "[CAMPAIGN] "
+labels: ["campaign"]
+body:
+  - type: textarea
+    id: target
+    attributes:
+      label: SPM-Kit surface and scientific question
+      description: Name the public CLI behavior, version/commit, metric, and exact claim the campaign could support.
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference and independence
+      description: Name software/version or analytical/physical reference and classify any shared code, library, or wrapper.
+    validations:
+      required: true
+  - type: textarea
+    id: protocol
+    attributes:
+      label: Inputs, preprocessing, metrics, and frozen tolerances
+    validations:
+      required: true
+  - type: textarea
+    id: rights
+    attributes:
+      label: Data rights and preservation plan
+      description: Include license, redistribution status, hashes, logs, manifests, failures, and known limitations.
+    validations:
+      required: true

@@ -1,0 +1,33 @@
+name: Reference dataset proposal
+description: Propose a lawful dataset or metadata-only candidate
+title: "[DATASET] "
+labels: ["dataset"]
+body:
+  - type: input
+    id: landing
+    attributes:
+      label: Landing page and version DOI
+    validations:
+      required: true
+  - type: textarea
+    id: inventory
+    attributes:
+      label: File inventory, checksums, acquisition context, and expected use
+    validations:
+      required: true
+  - type: textarea
+    id: rights
+    attributes:
+      label: License, redistribution status, and privacy
+      description: State whether files may enter Git and whether sample identity may remain private.
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scientific scope
+      options:
+        - label: I understand that public availability does not guarantee redistribution rights.
+          required: true
+        - label: I understand that a raw-only file is a reader fixture, not ground truth.
+          required: true

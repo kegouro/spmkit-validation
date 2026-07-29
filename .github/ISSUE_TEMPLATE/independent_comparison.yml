@@ -1,0 +1,31 @@
+name: Independent comparison report
+description: Report an external comparison with reproducible evidence
+title: "[COMPARISON] "
+labels: ["validation"]
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: SPM-Kit and reference versions
+    validations:
+      required: true
+  - type: textarea
+    id: independence
+    attributes:
+      label: Reference-independence classification
+      description: State shared code, libraries, wrappers, preprocessing, or prior exposure.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Inputs, commands, metrics, tolerances, and outcomes
+      description: Include every failure, error, or inconclusive case and remove private paths.
+    validations:
+      required: true
+  - type: textarea
+    id: limits
+    attributes:
+      label: Claim boundary and data rights
+    validations:
+      required: true
