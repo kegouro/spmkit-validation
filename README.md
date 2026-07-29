@@ -1,3 +1,9 @@
+<img src="docs/images/brand/spmkit-validation-banner.png" alt="SPMKit-Validation" width="100%">
+
+
+
+
+
 # SPM-Kit Validation
 
 **An external, process-isolated validation harness and evidence archive for SPM-Kit.**
