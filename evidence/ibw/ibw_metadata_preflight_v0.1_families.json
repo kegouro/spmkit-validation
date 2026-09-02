@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "unique_hashes": 14,
+  "exact_duplicates": 0,
+  "structural_family_count": 2,
+  "shared_layout": {
+    "ibw_version": 5,
+    "endianness": "little",
+    "numeric_type": "FP32",
+    "layout": "v5_32bit_pointer_layout"
+  },
+  "families": [
+    {"family_id": "v5-le-fp32-1024x1024x3", "shape": [1024, 1024, 3], "candidate_indexes": [1, 2]},
+    {"family_id": "v5-le-fp32-256x256x4", "shape": [256, 256, 4], "candidate_indexes": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]}
+  ],
+  "panel_characterization": "two shapes sharing one version, byte order, numeric type, and header layout"
+}
