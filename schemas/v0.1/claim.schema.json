@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:spmkit-validation:schema:v0.1:claim",
+  "title": "Scientific claim v0.1",
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "required": [
+        "claim_id",
+        "claim_text",
+        "level",
+        "scope",
+        "supported_case_ids",
+        "supported_comparison_ids",
+        "supported_evidence_ids",
+        "limitations",
+        "status"
+      ],
+      "properties": {
+        "claim_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "claim_text": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "level": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/validation_level"
+        },
+        "scope": {
+          "type": "object",
+          "required": ["description", "measurands", "dataset_roles", "reproducibility_dimensions"],
+          "properties": {
+            "description": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "measurands": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+            },
+            "dataset_roles": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "DEVELOPMENT",
+                  "VERIFICATION",
+                  "CROSS_VALIDATION",
+                  "PHYSICAL_REFERENCE",
+                  "BLIND_HOLDOUT"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "reproducibility_dimensions": {
+              "type": "array",
+              "items": {
+                "enum": ["ENVIRONMENT", "PLATFORM", "OPERATOR", "INSTRUMENT", "LABORATORY"]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "supported_case_ids": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+        },
+        "supported_comparison_ids": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+        },
+        "supported_evidence_ids": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+        },
+        "limitations": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/limitations"
+        },
+        "status": {
+          "enum": ["PROPOSED", "SUPPORTED", "REJECTED", "SUPERSEDED"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:spmkit-validation:schema:v0.1:validation-bundle",
+  "title": "SPM-Kit ValidationBundle v0.1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "campaign",
+    "datasets",
+    "references",
+    "cases",
+    "runs",
+    "comparisons",
+    "evidence",
+    "claims"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "campaign": {
+      "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/campaign"
+    },
+    "datasets": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:spmkit-validation:schema:v0.1:dataset#/$defs/dataset"
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:spmkit-validation:schema:v0.1:reference#/$defs/reference"
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:spmkit-validation:schema:v0.1:case#/$defs/case"
+      }
+    },
+    "runs": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:spmkit-validation:schema:v0.1:run#/$defs/run"
+      }
+    },
+    "comparisons": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:spmkit-validation:schema:v0.1:comparison#/$defs/comparison"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:spmkit-validation:schema:v0.1:evidence#/$defs/artifact"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:spmkit-validation:schema:v0.1:claim#/$defs/claim"
+      }
+    }
+  },
+  "additionalProperties": false
+}

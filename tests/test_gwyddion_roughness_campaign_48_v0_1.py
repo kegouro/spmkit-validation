@@ -7,7 +7,6 @@ from pathlib import Path
 
 import yaml
 
-
 ROOT = Path(__file__).parents[1]
 PROTOCOL = ROOT / "protocols" / "gwyddion_roughness_campaign_48_v0.1.yaml"
 LOCK = ROOT / "locks" / "gwyddion_roughness_campaign_48_v0.1.json"
@@ -15,12 +14,30 @@ DESIGN = ROOT / "campaigns" / "design" / "gwyddion_roughness_48_v0.1.jsonl"
 DOCUMENT = ROOT / "docs" / "campaigns" / "gwyddion_roughness_48_v0.1.md"
 PRIVATE = re.compile(r"/" + "Users/|file" + r"://|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}", re.I)
 RECORD_KEYS = (
-    "schema_version", "campaign_id", "case_index", "case_id", "surface_id",
-    "surface_parameters", "corruption_id", "corruption_parameters", "seed",
-    "rng_engine", "rng_semantics", "sampling_convention", "array_axis_0",
-    "array_axis_1", "shape", "x_real_um", "y_real_um", "z_numeric_unit",
-    "dtype", "byte_order", "memory_order", "canonical_matrix_sha256",
-    "gsf_sha256", "expected_execution_status",
+    "schema_version",
+    "campaign_id",
+    "case_index",
+    "case_id",
+    "surface_id",
+    "surface_parameters",
+    "corruption_id",
+    "corruption_parameters",
+    "seed",
+    "rng_engine",
+    "rng_semantics",
+    "sampling_convention",
+    "array_axis_0",
+    "array_axis_1",
+    "shape",
+    "x_real_um",
+    "y_real_um",
+    "z_numeric_unit",
+    "dtype",
+    "byte_order",
+    "memory_order",
+    "canonical_matrix_sha256",
+    "gsf_sha256",
+    "expected_execution_status",
 )
 
 

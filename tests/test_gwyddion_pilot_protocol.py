@@ -11,7 +11,6 @@ import yaml
 
 from spmkit_validation.gwyddion_gsf import read_gsf, write_gsf
 
-
 ROOT = Path(__file__).parents[1]
 PROTOCOL = ROOT / "protocols" / "gwyddion_pilot_v0.1.yaml"
 LOCK = ROOT / "locks" / "gwyddion_pilot_v0.1.json"
@@ -29,7 +28,12 @@ def test_protocol_and_lock_are_frozen_and_sanitized() -> None:
     assert protocol["z_unit"] == "nm"
     assert protocol["metrics_primary"] == ["Sa", "Sq", "Sz"]
     assert protocol["pass_fail_thresholds"] is None
-    assert set(cases) == {"P01_PLANE_RAW", "P02_SINE_RAW", "P03_STEP_GAUSSIAN", "P04_SINE_LINE_OFFSETS"}
+    assert set(cases) == {
+        "P01_PLANE_RAW",
+        "P02_SINE_RAW",
+        "P03_STEP_GAUSSIAN",
+        "P04_SINE_LINE_OFFSETS",
+    }
     assert cases["P02_SINE_RAW"]["parameters"]["axis"] == "x"
     assert cases["P02_SINE_RAW"]["parameters"]["period_x_m"] == 2.5e-6
     assert cases["P03_STEP_GAUSSIAN"]["corruptions"][0]["seed"] == 42
@@ -37,8 +41,15 @@ def test_protocol_and_lock_are_frozen_and_sanitized() -> None:
     assert lock["state"] == "READY_TO_EXECUTE"
     assert lock["gwyddion"]["batch_capability"] == "BATCH_CONFIRMED"
     assert lock["repositories"]["spmkit"]["commit"] == "5a704d61145cc502a8e5bc855bf300836fc3832e"
-    assert lock["repositories"]["spmkit_phantoms"]["commit"] == "16fffcebc931765fdd193cf531b07db576689523"
-    assert set(item["path"] for item in lock["repositories"].values()) == {"<spmkit>", "<validation>", "<phantoms>"}
+    assert (
+        lock["repositories"]["spmkit_phantoms"]["commit"]
+        == "16fffcebc931765fdd193cf531b07db576689523"
+    )
+    assert {item["path"] for item in lock["repositories"].values()} == {
+        "<spmkit>",
+        "<validation>",
+        "<phantoms>",
+    }
     text = PROTOCOL.read_text() + LOCK.read_text() + DOCUMENT.read_text()
     assert not PRIVATE.search(text)
     assert "LEVEL 3" not in text

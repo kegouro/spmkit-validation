@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:spmkit-validation:schema:v0.1:case",
+  "title": "Validation case v0.1",
+  "$defs": {
+    "tolerance": {
+      "type": "object",
+      "required": [
+        "tolerance_id",
+        "measurand_id",
+        "type",
+        "unit",
+        "justification",
+        "source"
+      ],
+      "properties": {
+        "tolerance_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "measurand_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "type": {
+          "enum": [
+            "ABSOLUTE",
+            "RELATIVE",
+            "ABSOLUTE_AND_RELATIVE",
+            "INTERVAL",
+            "ULP",
+            "UNCERTAINTY_NORMALIZED"
+          ]
+        },
+        "absolute": {
+          "type": "number",
+          "minimum": 0
+        },
+        "relative": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lower": {
+          "type": "number"
+        },
+        "upper": {
+          "type": "number"
+        },
+        "max_ulp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_normalized_error": {
+          "type": "number",
+          "minimum": 0
+        },
+        "unit": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "justification": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "source": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "ABSOLUTE"
+            }
+          },
+          "required": ["absolute"],
+          "not": {
+            "anyOf": [
+              {"required": ["relative"]},
+              {"required": ["lower"]},
+              {"required": ["upper"]},
+              {"required": ["max_ulp"]},
+              {"required": ["max_normalized_error"]}
+            ]
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "RELATIVE"
+            }
+          },
+          "required": ["relative"],
+          "not": {
+            "anyOf": [
+              {"required": ["absolute"]},
+              {"required": ["lower"]},
+              {"required": ["upper"]},
+              {"required": ["max_ulp"]},
+              {"required": ["max_normalized_error"]}
+            ]
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "ABSOLUTE_AND_RELATIVE"
+            }
+          },
+          "required": ["absolute", "relative"],
+          "not": {
+            "anyOf": [
+              {"required": ["lower"]},
+              {"required": ["upper"]},
+              {"required": ["max_ulp"]},
+              {"required": ["max_normalized_error"]}
+            ]
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "INTERVAL"
+            }
+          },
+          "required": ["lower", "upper"],
+          "not": {
+            "anyOf": [
+              {"required": ["absolute"]},
+              {"required": ["relative"]},
+              {"required": ["max_ulp"]},
+              {"required": ["max_normalized_error"]}
+            ]
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "ULP"
+            }
+          },
+          "required": ["max_ulp"],
+          "not": {
+            "anyOf": [
+              {"required": ["absolute"]},
+              {"required": ["relative"]},
+              {"required": ["lower"]},
+              {"required": ["upper"]},
+              {"required": ["max_normalized_error"]}
+            ]
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "UNCERTAINTY_NORMALIZED"
+            }
+          },
+          "required": ["max_normalized_error"],
+          "not": {
+            "anyOf": [
+              {"required": ["absolute"]},
+              {"required": ["relative"]},
+              {"required": ["lower"]},
+              {"required": ["upper"]},
+              {"required": ["max_ulp"]}
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "measurand": {
+      "type": "object",
+      "required": ["measurand_id", "canonical_unit", "physical_quantity", "description"],
+      "properties": {
+        "measurand_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "canonical_unit": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "physical_quantity": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "description": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "case": {
+      "type": "object",
+      "required": [
+        "case_id",
+        "dataset_id",
+        "reference_id",
+        "purpose",
+        "operation",
+        "input_selector",
+        "preprocessing",
+        "measurands",
+        "tolerances",
+        "expected_units",
+        "acceptance_policy",
+        "predeclared_at",
+        "case_status"
+      ],
+      "properties": {
+        "case_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "dataset_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "reference_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "purpose": {
+          "enum": [
+            "DEVELOPMENT",
+            "VERIFICATION",
+            "CROSS_VALIDATION",
+            "PHYSICAL_VALIDATION",
+            "BLIND_EVALUATION",
+            "REPRODUCIBILITY"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "required": ["name", "version", "parameters"],
+          "properties": {
+            "name": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "version": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "parameters": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        "input_selector": {
+          "type": "object",
+          "required": ["selector_type"],
+          "properties": {
+            "selector_type": {
+              "enum": ["FULL_DATASET", "REGION", "CHANNEL", "OPAQUE_SELECTION"]
+            },
+            "expression": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "opaque_selector_id": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+            },
+            "evidence_artifact_id": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "selector_type": {
+                    "const": "OPAQUE_SELECTION"
+                  }
+                },
+                "required": ["selector_type"]
+              },
+              "then": {
+                "required": ["opaque_selector_id"],
+                "not": {
+                  "required": ["expression"]
+                }
+              },
+              "else": {
+                "not": {
+                  "required": ["opaque_selector_id"]
+                }
+              }
+            }
+          ],
+          "additionalProperties": false
+        },
+        "preprocessing": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step_id", "method", "parameters"],
+            "properties": {
+              "step_id": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+              },
+              "method": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+              },
+              "parameters": {
+                "type": "object"
+              },
+              "evidence_artifact_id": {
+                "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "measurands": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/measurand"
+          }
+        },
+        "tolerances": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/tolerance"
+          }
+        },
+        "expected_units": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+          }
+        },
+        "acceptance_policy": {
+          "type": "object",
+          "required": ["aggregation", "on_evaluation_error", "on_missing_result"],
+          "properties": {
+            "aggregation": {
+              "const": "ALL_MEASURANDS_MUST_PASS"
+            },
+            "on_evaluation_error": {
+              "const": "ERROR"
+            },
+            "on_missing_result": {
+              "const": "NOT_EVALUATED"
+            }
+          },
+          "additionalProperties": false
+        },
+        "predeclared_at": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/timestamp"
+        },
+        "case_status": {
+          "enum": ["DRAFT", "ACTIVE", "RETIRED"]
+        },
+        "determinism_requirement": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/determinism_requirement"
+        },
+        "determinism_override_justification": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        }
+      },
+      "dependentRequired": {
+        "determinism_requirement": ["determinism_override_justification"]
+      },
+      "additionalProperties": false
+    }
+  }
+}

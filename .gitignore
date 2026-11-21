@@ -4,5 +4,15 @@ __pycache__/
 .pytest_cache/
 *.stdout
 *.stderr
+sut-venv/
 
 results/
+
+# Local environment and secrets (only sanitized templates are versionable)
+.env
+.env.*
+.envrc
+.direnv/
+!.env.example
+!.env.sample
+!.env.template

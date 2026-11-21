@@ -4,7 +4,6 @@ import json
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "evidence/campaigns/nanoscope_spm_parser_pilot_v0.1_results.jsonl"
 SUMMARY = ROOT / "evidence/campaigns/nanoscope_spm_parser_pilot_v0.1_summary.json"

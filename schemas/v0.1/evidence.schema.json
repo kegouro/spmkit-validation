@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:spmkit-validation:schema:v0.1:evidence",
+  "title": "Evidence artifact v0.1",
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "media_type",
+        "relative_uri",
+        "sha256",
+        "size_bytes",
+        "created_at",
+        "producer",
+        "regenerable",
+        "generation_command",
+        "source_artifact_ids",
+        "scientific_role",
+        "contains_sensitive_data",
+        "limitations"
+      ],
+      "properties": {
+        "artifact_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "artifact_type": {
+          "enum": [
+            "INPUT",
+            "OUTPUT",
+            "LOG",
+            "REPORT",
+            "PLOT",
+            "TABLE",
+            "MANIFEST",
+            "ENVIRONMENT_SNAPSHOT",
+            "REFERENCE_EXPORT",
+            "PHYSICAL_CALIBRATION_CERTIFICATE"
+          ]
+        },
+        "media_type": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+$"
+        },
+        "relative_uri": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/relative_or_permitted_uri"
+        },
+        "sha256": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "created_at": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/timestamp"
+        },
+        "producer": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "version": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "run_id": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+            }
+          },
+          "additionalProperties": false
+        },
+        "regenerable": {
+          "type": "boolean"
+        },
+        "generation_command": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+          }
+        },
+        "source_artifact_ids": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+        },
+        "scientific_role": {
+          "enum": [
+            "INPUT_DATA",
+            "SOFTWARE_TEST_RESULT",
+            "QUANTITATIVE_RESULT",
+            "DIAGNOSTIC",
+            "PROVENANCE",
+            "REFERENCE_VALUE",
+            "CALIBRATION",
+            "UNCERTAINTY",
+            "REPRODUCIBILITY",
+            "HUMAN_READABLE_REPORT"
+          ]
+        },
+        "contains_sensitive_data": {
+          "type": "boolean"
+        },
+        "external_schema": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "version": {
+              "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+            },
+            "schema_id": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "additionalProperties": false
+        },
+        "limitations": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/limitations"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"regenerable": {"const": true}},
+            "required": ["regenerable"]
+          },
+          "then": {
+            "properties": {"generation_command": {"minItems": 1}}
+          }
+        },
+        {
+          "if": {
+            "properties": {"artifact_type": {"const": "MANIFEST"}},
+            "required": ["artifact_type"]
+          },
+          "then": {
+            "required": ["external_schema"]
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

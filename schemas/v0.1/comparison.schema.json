@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:spmkit-validation:schema:v0.1:comparison",
+  "title": "Quantitative comparison v0.1",
+  "$defs": {
+    "nullable_number": {
+      "type": ["number", "null"]
+    },
+    "comparison": {
+      "type": "object",
+      "required": [
+        "comparison_id",
+        "case_id",
+        "run_id",
+        "measurand_id",
+        "observed",
+        "reference",
+        "difference",
+        "absolute_error",
+        "relative_error",
+        "normalized_error",
+        "tolerance_used",
+        "evaluation_status",
+        "outcome",
+        "evidence_ids",
+        "notes"
+      ],
+      "properties": {
+        "comparison_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "case_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "run_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "measurand_id": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "observed": {
+          "$ref": "#/$defs/nullable_number"
+        },
+        "reference": {
+          "$ref": "#/$defs/nullable_number"
+        },
+        "difference": {
+          "$ref": "#/$defs/nullable_number"
+        },
+        "absolute_error": {
+          "$ref": "#/$defs/nullable_number"
+        },
+        "relative_error": {
+          "$ref": "#/$defs/nullable_number"
+        },
+        "normalized_error": {
+          "$ref": "#/$defs/nullable_number"
+        },
+        "observed_uncertainty": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "reference_uncertainty": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "tolerance_used": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/identifier"
+        },
+        "evaluation_status": {
+          "enum": ["EVALUATED", "ERROR", "INCONCLUSIVE", "NOT_EVALUATED"]
+        },
+        "evaluation_error": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+        },
+        "outcome": {
+          "enum": ["PASS", "FAIL", "ERROR", "INCONCLUSIVE", "NOT_EVALUATED"]
+        },
+        "evidence_ids": {
+          "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/id_list"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:spmkit-validation:schema:v0.1:common#/$defs/non_empty_string"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"evaluation_status": {"const": "EVALUATED"}},
+            "required": ["evaluation_status"]
+          },
+          "then": {
+            "properties": {
+              "observed": {"type": "number"},
+              "reference": {"type": "number"},
+              "difference": {"type": "number"},
+              "absolute_error": {"type": "number"},
+              "outcome": {"enum": ["PASS", "FAIL"]}
+            },
+            "not": {
+              "required": ["evaluation_error"]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"evaluation_status": {"const": "ERROR"}},
+            "required": ["evaluation_status"]
+          },
+          "then": {
+            "required": ["evaluation_error"],
+            "properties": {"outcome": {"const": "ERROR"}}
+          }
+        },
+        {
+          "if": {
+            "properties": {"evaluation_status": {"const": "INCONCLUSIVE"}},
+            "required": ["evaluation_status"]
+          },
+          "then": {
+            "properties": {"outcome": {"const": "INCONCLUSIVE"}}
+          }
+        },
+        {
+          "if": {
+            "properties": {"evaluation_status": {"const": "NOT_EVALUATED"}},
+            "required": ["evaluation_status"]
+          },
+          "then": {
+            "properties": {"outcome": {"const": "NOT_EVALUATED"}}
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -4,7 +4,6 @@ from pathlib import Path
 
 import numpy as np
 
-
 _MAGIC = b"Gwyddion Simple Field 1.0\n"
 
 

@@ -6,7 +6,6 @@ from pathlib import Path
 
 import yaml
 
-
 ROOT = Path(__file__).parents[1]
 PROTOCOL = ROOT / "protocols" / "roughness_threshold_calibration_v0.1.yaml"
 LOCK = ROOT / "locks" / "roughness_threshold_calibration_v0.1.json"
@@ -23,7 +22,12 @@ def test_candidate_policy_is_frozen_and_independent() -> None:
     assert protocol["evidence_target"] == "LEVEL 2 NUMERICALLY_VERIFIED"
     assert policy["absolute_tolerance_nm"] == 1.0e-6
     assert policy["relative_tolerance"] == 1.0e-6
-    assert policy["criterion"] == "abs(a-b) <= absolute_tolerance_nm + relative_tolerance * max(abs(a), abs(b))"
+    assert (
+        policy["criterion"]
+        == (
+        "abs(a-b) <= absolute_tolerance_nm + relative_tolerance * max(abs(a), abs(b))"
+    )
+    )
     assert policy["metrics"] == ["Sa", "Sq", "Sz"]
     assert protocol["matrix_contract"] == {
         "shape": [256, 256],

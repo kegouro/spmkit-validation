@@ -1,0 +1,4 @@
+campaigns/cumulative-verification-v0.1/artifacts/**/*.csv binary
+campaigns/cumulative-verification-v0.1/artifacts/**/stdout.txt binary
+campaigns/cumulative-verification-v0.1/artifacts/**/stderr.txt binary
+campaigns/cumulative-verification-v0.1/artifacts/**/spmkit-help.txt binary

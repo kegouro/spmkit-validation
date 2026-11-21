@@ -34,41 +34,73 @@ import mimetypes
 import os
 import re
 import shutil
-import sqlite3
 import subprocess
 import sys
 import time
 from collections import Counter, defaultdict
+from collections.abc import Iterable, Iterator
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Iterator
-
+from typing import Any
 
 RAW_EXTENSIONS = {
-    ".nid", ".nhf", ".gwy", ".spm", ".sur", ".sdf", ".opd", ".opdx",
-    ".ibw", ".jpk", ".jpk-force", ".001", ".002", ".003", ".004",
-    ".005", ".mdt", ".sxm", ".sm4", ".bcrf", ".lext",
+    ".nid",
+    ".nhf",
+    ".gwy",
+    ".spm",
+    ".sur",
+    ".sdf",
+    ".opd",
+    ".opdx",
+    ".ibw",
+    ".jpk",
+    ".jpk-force",
+    ".001",
+    ".002",
+    ".003",
+    ".004",
+    ".005",
+    ".mdt",
+    ".sxm",
+    ".sm4",
+    ".bcrf",
+    ".lext",
 }
 
 MATRIX_EXTENSIONS = {
-    ".csv", ".tsv", ".txt", ".xyz", ".dat", ".asc", ".nc",
-    ".npy", ".npz", ".mat", ".h5", ".hdf5", ".tif", ".tiff",
+    ".csv",
+    ".tsv",
+    ".txt",
+    ".xyz",
+    ".dat",
+    ".asc",
+    ".nc",
+    ".npy",
+    ".npz",
+    ".mat",
+    ".h5",
+    ".hdf5",
+    ".tif",
+    ".tiff",
 }
 
 REFERENCE_EXTENSIONS = {".csv", ".tsv", ".json", ".jsonl", ".xml", ".yaml", ".yml"}
 DOCUMENT_EXTENSIONS = {".pdf", ".md", ".rst", ".doc", ".docx", ".tex", ".html", ".htm"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".svg"}
-ARCHIVE_EXTENSIONS = {
-    ".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz", ".tgz", ".tbz2", ".txz"
-}
-CODE_EXTENSIONS = {
-    ".py", ".ipynb", ".m", ".r", ".jl", ".cpp", ".c", ".h", ".hpp", ".sh", ".ps1"
-}
+ARCHIVE_EXTENSIONS = {".zip", ".7z", ".rar", ".tar", ".gz", ".bz2", ".xz", ".tgz", ".tbz2", ".txz"}
+CODE_EXTENSIONS = {".py", ".ipynb", ".m", ".r", ".jl", ".cpp", ".c", ".h", ".hpp", ".sh", ".ps1"}
 METADATA_EXTENSIONS = {".json", ".jsonld", ".xml", ".yaml", ".yml", ".ini", ".toml"}
 
 SUPPORTED_SPMKIT_PROBE_EXTENSIONS = {
-    ".nid", ".nhf", ".gwy", ".jpk", ".jpk-force", ".ibw", ".001", ".002"
+    ".nid",
+    ".nhf",
+    ".gwy",
+    ".jpk",
+    ".jpk-force",
+    ".ibw",
+    ".001",
+    ".002",
 }
 
 ROLE_ORDER = [
@@ -90,33 +122,71 @@ ROLE_ORDER = [
 
 NAME_PATTERNS = {
     "reference_psd": (
-        "psd", "power spectral density", "power_spectral_density",
-        "spectrum", "spectral density",
+        "psd",
+        "power spectral density",
+        "power_spectral_density",
+        "spectrum",
+        "spectral density",
     ),
     "reference_acf": (
-        "acf", "autocorrelation", "auto-correlation", "correlation function",
+        "acf",
+        "autocorrelation",
+        "auto-correlation",
+        "correlation function",
         "correlation_length",
     ),
     "reference_metrics": (
-        "roughness", "roughness_metrics", "surface_parameters",
-        "measurement_statistics", "measurement_results",
+        "roughness",
+        "roughness_metrics",
+        "surface_parameters",
+        "measurement_statistics",
+        "measurement_results",
     ),
     "height_matrix": (
-        "height", "topography", "surface", "profile", "xyz", "matrix", "map",
+        "height",
+        "topography",
+        "surface",
+        "profile",
+        "xyz",
+        "matrix",
+        "map",
     ),
     "metadata": (
-        "metadata", "meta", "manifest", "dataset", "record", "description",
-        "instrument", "parameters", "settings",
+        "metadata",
+        "meta",
+        "manifest",
+        "dataset",
+        "record",
+        "description",
+        "instrument",
+        "parameters",
+        "settings",
     ),
     "provenance": (
-        "license", "licence", "citation", "doi", "provenance", "readme",
-        "authors", "source",
+        "license",
+        "licence",
+        "citation",
+        "doi",
+        "provenance",
+        "readme",
+        "authors",
+        "source",
     ),
     "publication": (
-        "paper", "article", "publication", "supplement", "manuscript", "thesis",
+        "paper",
+        "article",
+        "publication",
+        "supplement",
+        "manuscript",
+        "thesis",
     ),
     "processed_topography": (
-        "processed", "filtered", "leveled", "levelled", "detrended", "flattened",
+        "processed",
+        "filtered",
+        "leveled",
+        "levelled",
+        "detrended",
+        "flattened",
     ),
 }
 
@@ -319,9 +389,7 @@ def looks_numeric_text(text: str) -> tuple[str, dict[str, Any]]:
     numeric_rows = 0
     consistent_widths: Counter[int] = Counter()
 
-    number_re = re.compile(
-        r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$"
-    )
+    number_re = re.compile(r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$")
 
     for line in lines:
         if line.startswith(("#", "%", ";")):
@@ -340,7 +408,9 @@ def looks_numeric_text(text: str) -> tuple[str, dict[str, Any]]:
         return "no", {}
 
     ratio = numeric_tokens / total_tokens
-    common_width, common_count = consistent_widths.most_common(1)[0] if consistent_widths else (0, 0)
+    common_width, common_count = (
+        consistent_widths.most_common(1)[0] if consistent_widths else (0, 0)
+    )
 
     if ratio >= 0.85 and numeric_rows >= 5 and common_width >= 2:
         likelihood = "high"
@@ -415,8 +485,14 @@ def classify_file(path: Path, text: str, numeric_likelihood: str) -> tuple[str, 
         if numeric_likelihood == "high":
             return "height_matrix", "medium", "Dense numeric text/table"
         if ext in {
-            ".npy", ".npz", ".mat", ".h5", ".hdf5",
-            ".tif", ".tiff", ".nc",
+            ".npy",
+            ".npz",
+            ".mat",
+            ".h5",
+            ".hdf5",
+            ".tif",
+            ".tiff",
+            ".nc",
         }:
             return (
                 "height_matrix",
@@ -503,7 +579,8 @@ def inventory(
                 readable = os.access(path, os.R_OK)
                 ext = normalized_extension(path)
                 should_read_text = (
-                    ext in (
+                    ext
+                    in (
                         REFERENCE_EXTENSIONS
                         | DOCUMENT_EXTENSIONS
                         | {".txt", ".csv", ".tsv", ".dat", ".xyz", ".asc"}
@@ -517,9 +594,7 @@ def inventory(
 
                 qfp = quick_fingerprint(path)
                 sha256 = (
-                    full_sha256(path)
-                    if stat.st_size <= full_hash_limit_bytes
-                    else f"sampled:{qfp}"
+                    full_sha256(path) if stat.st_size <= full_hash_limit_bytes else f"sampled:{qfp}"
                 )
 
                 record = FileRecord(
@@ -598,9 +673,7 @@ def dataset_manifest_hash(records: list[FileRecord]) -> str:
     return digest.hexdigest()
 
 
-def exact_duplicate_datasets(
-    by_dataset: dict[str, list[FileRecord]]
-) -> dict[str, list[str]]:
+def exact_duplicate_datasets(by_dataset: dict[str, list[FileRecord]]) -> dict[str, list[str]]:
     groups: dict[str, list[str]] = defaultdict(list)
     for dataset_id, records in by_dataset.items():
         groups[dataset_manifest_hash(records)].append(dataset_id)
@@ -693,9 +766,7 @@ def infer_dataset(
     duplicate_file_membership: set[str],
 ) -> DatasetRecord:
     roles = Counter(record.role for record in records)
-    keywords = Counter(
-        keyword for record in records for keyword in record.detected_keywords
-    )
+    keywords = Counter(keyword for record in records for keyword in record.detected_keywords)
 
     raw_available = roles["raw_instrument"] > 0
     height_matrix = roles["height_matrix"] > 0 or roles["processed_topography"] > 0
@@ -740,8 +811,18 @@ def infer_dataset(
 
     tags: list[str] = []
     for tag in (
-        "afm", "spm", "profilometry", "interferometry", "roughness", "psd",
-        "acf", "doi", "license", "tip_radius", "repeated", "multiscale",
+        "afm",
+        "spm",
+        "profilometry",
+        "interferometry",
+        "roughness",
+        "psd",
+        "acf",
+        "doi",
+        "license",
+        "tip_radius",
+        "repeated",
+        "multiscale",
     ):
         if keywords[tag] > 0:
             normalized = {
@@ -819,7 +900,8 @@ def infer_dataset(
     manual_review = (
         priority in {"priority_a", "priority_b"}
         or primary in {"incomplete", "rejected"}
-        or (raw_available or height_matrix) and not units_known
+        or (raw_available or height_matrix)
+        and not units_known
         or failed_probes > 0
     )
 
@@ -953,7 +1035,8 @@ def make_reports(
         "",
         "- **Reader/parser testing** checks whether SPM-Kit can load the file correctly.",
         "- **Algorithm cross-checking** compares derived values under matched preprocessing.",
-        "- **Scientific validation** requires documented units, calibration, processing conventions, provenance, and human review.",
+        "- **Scientific validation** requires documented units, calibration, "
+        "processing conventions, provenance, and human review.",
         "",
         "A high triage score is not a scientific validation claim.",
     ]
@@ -981,7 +1064,11 @@ def make_reports(
         ),
         (
             "Ambiguous units",
-            [d for d in datasets if (d.raw_available or d.height_matrix_available) and not d.units_known],
+            [
+                d
+                for d in datasets
+                if (d.raw_available or d.height_matrix_available) and not d.units_known
+            ],
         ),
         (
             "SPM-Kit probe failures",
@@ -1010,9 +1097,7 @@ def make_reports(
             )
         queue_lines.append("")
 
-    (output / "HUMAN_REVIEW_QUEUE.md").write_text(
-        "\n".join(queue_lines) + "\n", encoding="utf-8"
-    )
+    (output / "HUMAN_REVIEW_QUEUE.md").write_text("\n".join(queue_lines) + "\n", encoding="utf-8")
 
     dup_lines = [
         "# Duplicate Analysis",
@@ -1053,9 +1138,7 @@ def make_reports(
                 dup_lines.append(f"  - `{dataset_id}`")
             dup_lines.append("")
 
-    (output / "DUPLICATES.md").write_text(
-        "\n".join(dup_lines) + "\n", encoding="utf-8"
-    )
+    (output / "DUPLICATES.md").write_text("\n".join(dup_lines) + "\n", encoding="utf-8")
 
 
 def make_symlink_views(output: Path, datasets: list[DatasetRecord]) -> None:
@@ -1074,7 +1157,8 @@ def make_symlink_views(output: Path, datasets: list[DatasetRecord]) -> None:
             if link.exists() or link.is_symlink():
                 continue
             try:
-                link.symlink_to(Path(dataset.local_path), target_is_directory=Path(dataset.local_path).is_dir())
+                source_path = Path(dataset.local_path)
+                link.symlink_to(source_path, target_is_directory=source_path.is_dir())
             except OSError:
                 # Windows or restricted filesystems may block symlinks.
                 index = destination_dir / "INDEX.txt"
@@ -1134,9 +1218,7 @@ def main() -> int:
             dataset_group_lookup[dataset_id] = group_name
 
     duplicate_file_membership = {
-        item.absolute_path
-        for items in duplicate_files.values()
-        for item in items
+        item.absolute_path for items in duplicate_files.values() for item in items
     }
 
     probes: list[ProbeResult] = []
